@@ -615,7 +615,9 @@ bool PositionStruct::LegalMove(int mv) const {
       // 考虑升变，在底线并且兵(卒)不全时，才可升变
       return CAN_PROMOTE(sqSrc) && CanPromote();
     } else {
-      return IN_FORT(sqDst) && ADVISOR_SPAN(sqSrc, sqDst);
+//      return IN_FORT(sqDst) && ADVISOR_SPAN(sqSrc, sqDst);
+      // 士允许出城池
+      return IN_BOARD(sqDst) && ADVISOR_SPAN(sqSrc, sqDst);
     }
 
   // 4. 如果是相(象)，则先看是否过河，再看是否是合理位移，最后看有没有被塞象眼
@@ -625,7 +627,9 @@ bool PositionStruct::LegalMove(int mv) const {
       // 考虑升变，在底线并且兵(卒)不全时，才可升变
       return CAN_PROMOTE(sqSrc) && CanPromote();
     } else {
-      return SAME_HALF(sqSrc, sqDst) && BISHOP_SPAN(sqSrc, sqDst) && this->ucpcSquares[BISHOP_PIN(sqSrc, sqDst)] == 0;
+//      return SAME_HALF(sqSrc, sqDst) && BISHOP_SPAN(sqSrc, sqDst) && this->ucpcSquares[BISHOP_PIN(sqSrc, sqDst)] == 0;
+      // 相允许过河
+      return BISHOP_SPAN(sqSrc, sqDst) && this->ucpcSquares[BISHOP_PIN(sqSrc, sqDst)] == 0;
     }
 
   // 5. 如果是马，则先看看是否是合理位移，再看有没有被蹩马腿

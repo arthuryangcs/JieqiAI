@@ -88,7 +88,7 @@ int main(void) {
       PrintLn("readyok");
       break;
     case UCCI_COMM_STOP:
-      PrintLn("nobestmove");
+      PrintLn("nobestmove, stop 2");
       break;
     case UCCI_COMM_POSITION:
       BuildPos(Search.pos, UcciComm);

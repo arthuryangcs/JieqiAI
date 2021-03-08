@@ -683,7 +683,7 @@ void SearchMain(int nDepth) {
   // 1. 遇到和棋则直接返回
   if (Search.pos.IsDraw() || Search.pos.RepStatus(3) > 0) {
 #ifndef CCHESS_A3800
-    printf("nobestmove\n");
+    printf("nobestmove, 遇到和棋则直接返回\n");
     fflush(stdout);
 #endif
     return;    
@@ -738,7 +738,7 @@ void SearchMain(int nDepth) {
 #ifndef CCHESS_A3800
     printf("info depth 0 score %d\n", SearchQuiesc(Search.pos, -MATE_VALUE, MATE_VALUE));
     fflush(stdout);
-    printf("nobestmove\n");
+    printf("nobestmove, 如果深度为零则返回静态搜索值\n");
     fflush(stdout);
 #endif
     return;
@@ -853,7 +853,7 @@ void SearchMain(int nDepth) {
       }
     }
   } else {
-    printf("nobestmove");
+    printf("nobestmove, 输出最佳着法及其最佳应对(作为后台思考的猜测着法)");
   }
   printf("\n");
   fflush(stdout);

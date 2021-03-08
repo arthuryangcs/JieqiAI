@@ -350,7 +350,9 @@ void PreGenInit(void) {
       n = 0;
       for (i = 0; i < 4; i ++) {
         sqDst = sqSrc + cnAdvisorMoveTab[i];
-        if (IN_FORT(sqDst)) {
+        // if (IN_FORT(sqDst))
+        // 士允许出城池
+        if (IN_BOARD(sqDst)) {
           PreGen.ucsqAdvisorMoves[sqSrc][n] = sqDst;
           n ++;
         }
@@ -361,7 +363,9 @@ void PreGenInit(void) {
       n = 0;
       for (i = 0; i < 4; i ++) {
         sqDst = sqSrc + cnBishopMoveTab[i];
-        if (IN_BOARD(sqDst) && SAME_HALF(sqSrc, sqDst)) {
+//        if (IN_BOARD(sqDst) && SAME_HALF(sqSrc, sqDst)) {
+        // 相允许过河
+        if (IN_BOARD(sqDst)) {
           PreGen.ucsqBishopMoves[sqSrc][n] = sqDst;
           PreGen.ucsqBishopPins[sqSrc][n] = BISHOP_PIN(sqSrc, sqDst);
           n ++;

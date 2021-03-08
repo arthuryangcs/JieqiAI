@@ -27,9 +27,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../base/pipe.h"
 #include "../eleeye/ucci.h"
 
-const int MAX_CHAR = 1024; // ÅäÖÃÎÄ¼şµÄ×î´ó³¤¶È
+const int MAX_CHAR = 1024; // é…ç½®æ–‡ä»¶çš„æœ€å¤§é•¿åº¦
 
-// ICCS¸ñÊ½×ª»»£ºÇ³ºìµ½UCCI
+// ICCSæ ¼å¼è½¬æ¢ï¼šæµ…çº¢åˆ°UCCI
 inline uint32_t ICCS_QH_UCCI(const char *szIccs) {
   union {
     char c[4];
@@ -42,7 +42,7 @@ inline uint32_t ICCS_QH_UCCI(const char *szIccs) {
   return Ret.dw;
 }
 
-// ICCS¸ñÊ½×ª»»£ºUCCIµ½Ç³ºì
+// ICCSæ ¼å¼è½¬æ¢ï¼šUCCIåˆ°æµ…çº¢
 inline void ICCS_UCCI_QH(char *szIccs, uint32_t dwMoveStr) {
   char *lpMoveStr;
   lpMoveStr = (char *) &dwMoveStr;
@@ -54,7 +54,7 @@ inline void ICCS_UCCI_QH(char *szIccs, uint32_t dwMoveStr) {
   szIccs[5] = '\0';
 }
 
-// °ÑUCCIÒıÇæµÄFEN´®×ª»»ÎªÇ³ºì²å¼şµÄFEN´®
+// æŠŠUCCIå¼•æ“çš„FENä¸²è½¬æ¢ä¸ºæµ…çº¢æ’ä»¶çš„FENä¸²
 static void FenUcci2QH(char *lp, bool bBlackMoves) {
   while (*lp != ' ' && *lp != '\0') {
     switch (*lp) {
@@ -80,14 +80,14 @@ static void FenUcci2QH(char *lp, bool bBlackMoves) {
 
 PipeStruct pipePlugin;
 
-// ÏòÇ³ºì²å¼ş·¢ËÍÖ¸Áî
+// å‘æµ…çº¢æ’ä»¶å‘é€æŒ‡ä»¤
 inline void Adapter2QH(const char *szLineStr) {
   pipePlugin.LineOutput(szLineStr);
   printf("info lineoutput [%s]\n", szLineStr);
   fflush(stdout);
 }
 
-// ½ÓÊÕÇ³ºì²å¼şµÄ·´À¡ĞÅÏ¢
+// æ¥æ”¶æµ…çº¢æ’ä»¶çš„åé¦ˆä¿¡æ¯
 inline bool QH2Adapter(char *szLineStr) {
   if (pipePlugin.LineInput(szLineStr)) {
     printf("info lineinput [%s]\n", szLineStr);
@@ -103,7 +103,7 @@ inline void PrintLn(const char *sz) {
   fflush(stdout);
 }
 
-// Ö÷º¯Êı
+// ä¸»å‡½æ•°
 int main(void) {
   int i, nLevel, nThinkTime;
   bool bQuit, bBlackMoves, bTimeOut;
@@ -119,9 +119,9 @@ int main(void) {
   if (BootLine() != UCCI_COMM_UCCI) {
     return 0;
   }
-  // ÊÕµ½"ucci"Ö¸Áîºó£¬Íê³ÉÒÔÏÂ¼¸¸öÈÎÎñ£º
+  // æ”¶åˆ°"ucci"æŒ‡ä»¤åï¼Œå®Œæˆä»¥ä¸‹å‡ ä¸ªä»»åŠ¡ï¼š
 
-  // 1. ¶ÁÈ¡ÊÊÅäÆ÷ÅäÖÃÎÄ¼ş"QH2UCCI.INI"
+  // 1. è¯»å–é€‚é…å™¨é…ç½®æ–‡ä»¶"QH2UCCI.INI"
   LocatePath(szIniFile, "QH2UCCI.INI");
   nLevel = 0;
   fpIniFile = fopen(szIniFile, "rt");
@@ -158,7 +158,7 @@ int main(void) {
   }
   fclose(fpIniFile);
 
-  // 2. ³õÊ¹»¯ÊÊÅäÆ÷²ÎÊı
+  // 2. åˆä½¿åŒ–é€‚é…å™¨å‚æ•°
   bQuit = bBlackMoves = false;
   pipePlugin.Open(szCommand);
   sprintf(szLineStr, "LEVEL %d", nLevel);
@@ -174,14 +174,14 @@ int main(void) {
   PrintLn("option dualtime type label");
   PrintLn("ucciok");
 
-  // 3. ½ÓÊÕUCCIÖ¸Áî
+  // 3. æ¥æ”¶UCCIæŒ‡ä»¤
   while (!bQuit) {
     switch (IdleLine(UcciComm, false)) {
     case UCCI_COMM_ISREADY:
       PrintLn("readyok");
       break;
     case UCCI_COMM_STOP:
-      PrintLn("nobestmove");
+      PrintLn("nobestmove, stop");
       break;
     case UCCI_COMM_POSITION:
       bBlackMoves = (strstr(UcciComm.szFenStr, " b") != NULL);
@@ -221,12 +221,12 @@ int main(void) {
       switch (UcciComm.Go) {
       case UCCI_GO_DEPTH:
       case UCCI_GO_NODES:
-        // ÊÊÅäÆ÷²»Ö§³Ö"depth"ºÍ"nodes"Ë¼¿¼Ä£Ê½
-        PrintLn("nobestmove");
+        // é€‚é…å™¨ä¸æ”¯æŒ"depth"å’Œ"nodes"æ€è€ƒæ¨¡å¼
+        PrintLn("nobestmove, é€‚é…å™¨ä¸æ”¯æŒ");
         break;
       case UCCI_GO_TIME_MOVESTOGO:
       case UCCI_GO_TIME_INCREMENT:
-        // ÔÚ"time"Ë¼¿¼Ä£Ê½ÏÂ£¬·ÖÅäÊÊµ±µÄÊ±¼ä×÷Ë¼¿¼
+        // åœ¨"time"æ€è€ƒæ¨¡å¼ä¸‹ï¼Œåˆ†é…é€‚å½“çš„æ—¶é—´ä½œæ€è€ƒ
         if (UcciComm.Go == UCCI_GO_TIME_MOVESTOGO) {
           nThinkTime = UcciComm.nTime / UcciComm.nMovesToGo;
         } else {
@@ -236,13 +236,13 @@ int main(void) {
         llTime = GetTime();
         bTimeOut = false;
         while (!bQuit) {
-          // µÈ´ıË¼¿¼½á¹û£¬ĞèÒª¼ì²éÒÔÏÂ¼¸·½ÃæÄÚÈİ£º
-          // (1) ¿ØÖÆÊ±¼ä
+          // ç­‰å¾…æ€è€ƒç»“æœï¼Œéœ€è¦æ£€æŸ¥ä»¥ä¸‹å‡ æ–¹é¢å†…å®¹ï¼š
+          // (1) æ§åˆ¶æ—¶é—´
           if (!bTimeOut && (int) (GetTime() - llTime) > nThinkTime) {
             Adapter2QH("TIMEOUT");
             bTimeOut = true;
           }
-          // (2) ´¦ÀíUCCIÖ¸Áî
+          // (2) å¤„ç†UCCIæŒ‡ä»¤
           switch (BusyLine(UcciComm, false)) {
           case UCCI_COMM_STOP:
             if (!bTimeOut) {
@@ -257,7 +257,7 @@ int main(void) {
           default:
             break;
           }
-          // (3) ´¦ÀíÇ³ºì²å¼şµÄ·´À¡ĞÅÏ¢
+          // (3) å¤„ç†æµ…çº¢æ’ä»¶çš„åé¦ˆä¿¡æ¯
           if (QH2Adapter(szLineStr)) {
             if (StrEqv(szLineStr, "ERROR") || StrEqv(szLineStr, "ABORTED")) {
               PrintLn("nobestmove");
@@ -288,7 +288,7 @@ int main(void) {
     }
   }
 
-  // 4. ¹Ø±ÕÇ³ºì²å¼şºÍ¹ÜµÀ
+  // 4. å…³é—­æµ…çº¢æ’ä»¶å’Œç®¡é“
   Adapter2QH("QUIT");
   llTime = GetTime();
   while ((int) (GetTime() - llTime) < 1000) {
