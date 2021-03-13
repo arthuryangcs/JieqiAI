@@ -27,36 +27,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../base/base.h"
 #include "position.h"
 
-const int LIMIT_DEPTH = 64;       // 搜索的极限深度
+const int64_t LIMIT_DEPTH = 64;       // 搜索的极限深度
 const int SORT_VALUE_MAX = 65535; // 着法序列最大值
 
-extern const int FIBONACCI_LIST[32];
+extern const int64_t FIBONACCI_LIST[32];
 
 // "nHistory"只在"movesort.cpp"一个模块中使用
-extern int nHistory[65536]; // 历史表
+extern int64_t nHistory[65536]; // 历史表
 
 // 着法顺序的若干阶段(参阅"NextFull()"函数)
-const int PHASE_HASH = 0;
-const int PHASE_GEN_CAP = 1;
-const int PHASE_GOODCAP = 2;
-const int PHASE_KILLER1 = 3;
-const int PHASE_KILLER2 = 4;
-const int PHASE_GEN_NONCAP = 5;
-const int PHASE_REST = 6;
+const int64_t PHASE_HASH = 0;
+const int64_t PHASE_GEN_CAP = 1;
+const int64_t PHASE_GOODCAP = 2;
+const int64_t PHASE_KILLER1 = 3;
+const int64_t PHASE_KILLER2 = 4;
+const int64_t PHASE_GEN_NONCAP = 5;
+const int64_t PHASE_REST = 6;
 
 const bool NEXT_ALL = true;    // 着法顺序函数"MoveSortStruct::NextQuiesc()"选项
 const bool ROOT_UNIQUE = true; // 着法顺序函数"MoveSortStruct::ResetRoot()"选项
 
 // 着法序列结构
 struct MoveSortStruct {
-  int nPhase, nMoveIndex, nMoveNum;
-  int mvHash, mvKiller1, mvKiller2;
+  int64_t nPhase, nMoveIndex, nMoveNum;
+  int64_t mvHash, mvKiller1, mvKiller2;
   MoveStruct mvs[MAX_GEN_MOVES];
 
   void SetHistory(void); // 根据历史表对着法列表赋值
   void ShellSort(void);  // 着法排序过程
   // 好的吃子着法(包括没有着法，都不更新历史表和杀手着法表)
-  bool GoodCap(const PositionStruct &pos, int mv) {
+  bool GoodCap(const PositionStruct &pos, int64_t mv) {
     return mv == 0 || nPhase == PHASE_GOODCAP || (nPhase < PHASE_GOODCAP && pos.GoodCap(mv));
   }
 
@@ -77,7 +77,7 @@ struct MoveSortStruct {
     SetHistory();
     ShellSort();
   }
-  int NextQuiesc(bool bNextAll = false) {
+  int64_t NextQuiesc(bool bNextAll = false) {
     if (nMoveIndex < nMoveNum && (bNextAll || mvs[nMoveIndex].wvl > 0)) {
       nMoveIndex ++;
       return mvs[nMoveIndex - 1].wmv;
@@ -87,23 +87,23 @@ struct MoveSortStruct {
   }
 
   // 完全搜索的着法顺序控制
-  void InitFull(const PositionStruct &pos, int mv, const uint16_t *lpwmvKiller) {
+  void InitFull(const PositionStruct &pos, int64_t mv, const uint16_t *lpwmvKiller) {
     nPhase = PHASE_HASH;
     mvHash = mv;
     mvKiller1 = lpwmvKiller[0];
     mvKiller2 = lpwmvKiller[1];
   }
-  int InitEvade(PositionStruct &pos, int mv, const uint16_t *lpwmvKiller);
-  int NextFull(const PositionStruct &pos);
+  int64_t InitEvade(PositionStruct &pos, int64_t mv, const uint16_t *lpwmvKiller);
+  int64_t NextFull(const PositionStruct &pos);
 
   // 根结点着法顺序控制
-  void InitRoot(const PositionStruct &pos, int nBanMoves, const uint16_t *lpwmvBanList);
+  void InitRoot(const PositionStruct &pos, int64_t nBanMoves, const uint16_t *lpwmvBanList);
   void ResetRoot(bool bUnique = false) {
     nMoveIndex = 0;
     ShellSort();
     nMoveIndex = (bUnique ? 1 : 0);
   }
-  int NextRoot(void) {
+  int64_t NextRoot(void) {
     if (nMoveIndex < nMoveNum) {
       nMoveIndex ++;
       return mvs[nMoveIndex - 1].wmv;
@@ -111,7 +111,7 @@ struct MoveSortStruct {
       return 0;
     }
   }
-  void UpdateRoot(int mv);
+  void UpdateRoot(int64_t mv);
 };
 
 // 清空历史表
@@ -138,7 +138,7 @@ inline void CopyKiller(uint16_t (*lpwmvDst)[2], const uint16_t (*lpwmvSrc)[2]) {
  * 4. 以上几种情况的组合，例如：n^2 + 2^n，等等。
  * ElephantEye使用最传统的平方关系。
  */
-inline void SetBestMove(int mv, int nDepth, uint16_t *lpwmvKiller) {
+inline void SetBestMove(int64_t mv, int64_t nDepth, uint16_t *lpwmvKiller) {
   nHistory[mv] += SQR(nDepth);
   if (lpwmvKiller[0] != mv) {
     lpwmvKiller[1] = lpwmvKiller[0];

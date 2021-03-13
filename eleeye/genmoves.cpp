@@ -41,9 +41,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 // 本模块只涉及到"PositionStruct"中的"sdPlayer"、"ucpcSquares"和"ucsqPieces"三个成员，故省略前面的"this->"
 
 // 棋子保护判断
-bool PositionStruct::Protected(int sd, int sqSrc, int sqExcept) const {
+bool PositionStruct::Protected(int64_t sd, int64_t sqSrc, int64_t sqExcept) const {
   // 参数"sqExcept"表示排除保护的棋子(指格子编号)，考虑被牵制子的保护时，需要排除牵制目标子的保护
-  int i, sqDst, sqPin, pc, x, y, nSideTag;
+  int64_t i, sqDst, sqPin, pc, x, y, nSideTag;
   SlideMaskStruct *lpsmsRank, *lpsmsFile;
   // 棋子保护判断包括以下几个步骤：
 
@@ -78,7 +78,7 @@ bool PositionStruct::Protected(int sd, int sqSrc, int sqExcept) const {
       sqDst = ucsqPieces[nSideTag + i];
       if (sqDst != 0 && sqDst != sqExcept) {
         __ASSERT_SQUARE(sqDst);
-        if (BISHOP_SPAN(sqSrc, sqDst) && ucpcSquares[BISHOP_PIN(sqSrc, sqDst)] == 0) {
+        if (BISHOP_SPAN(sqSrc, sqDst) && ucpcSquares[BISHOP_PIN(sqSrc, sqDst)] == NO_PIECE) {
           return true;
         }
       }
@@ -91,7 +91,7 @@ bool PositionStruct::Protected(int sd, int sqSrc, int sqExcept) const {
       // __ASSERT_SQUARE(sqDst);
       if (sqDst != sqExcept) {
         pc = ucpcSquares[sqDst];
-        if ((pc & nSideTag) != 0 && PIECE_INDEX(pc) >= PAWN_FROM) {
+        if (IS_SAME_SIDE(pc, nSideTag) && PIECE_INDEX(pc) >= PAWN_FROM) {
           return true;
         }
       }
@@ -104,7 +104,7 @@ bool PositionStruct::Protected(int sd, int sqSrc, int sqExcept) const {
   // __ASSERT_SQUARE(sqDst);
   if (sqDst != sqExcept) {
     pc = ucpcSquares[sqDst];
-    if ((pc & nSideTag) != 0 && PIECE_INDEX(pc) >= PAWN_FROM) {
+    if (IS_SAME_SIDE(pc, nSideTag) && PIECE_INDEX(pc) >= PAWN_FROM) {
       return true;
     }
   }
@@ -115,7 +115,7 @@ bool PositionStruct::Protected(int sd, int sqSrc, int sqExcept) const {
     if (sqDst != 0 && sqDst != sqExcept) {
       __ASSERT_SQUARE(sqDst);
       sqPin = KNIGHT_PIN(sqDst, sqSrc); // 注意，sqSrc和sqDst是反的！
-      if (sqPin != sqDst && ucpcSquares[sqPin] == 0) {
+      if (sqPin != sqDst && ucpcSquares[sqPin] == NO_PIECE) {
         return true;
       }
     }
@@ -171,8 +171,8 @@ bool PositionStruct::Protected(int sd, int sqSrc, int sqExcept) const {
  * MVV价值表"SIMPLE_VALUE"是按照帅(将)=5、车=4、马炮=3、兵(卒)=2、仕(士)相(象)=1设定的；
  * LVA价值直接体现在吃子着法生成器中。
  */
-int PositionStruct::MvvLva(int sqDst, int pcCaptured, int nLva) const {
-  int nMvv, nLvaAdjust;
+int64_t PositionStruct::MvvLva(int64_t sqDst, int64_t pcCaptured, int64_t nLva) const {
+  int64_t nMvv, nLvaAdjust;
   nMvv = SIMPLE_VALUE(pcCaptured);
   nLvaAdjust = (Protected(OPP_SIDE(sdPlayer), sqDst) ? nLva : 0);
   if (nMvv >= nLvaAdjust) {
@@ -183,9 +183,9 @@ int PositionStruct::MvvLva(int sqDst, int pcCaptured, int nLva) const {
 }
 
 // 吃子着法生成器，按MVV(LVA)设定分值
-int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
-  int i, sqSrc, sqDst, pcCaptured;
-  int x, y, nSideTag, nOppSideTag;
+int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
+  int64_t i, sqSrc, sqDst, pcCaptured;
+  int64_t x, y, nSideTag, nOppSideTag;
   bool bCanPromote;
   SlideMoveStruct *lpsmv;
   uint8_t *lpucsqDst, *lpucsqPin;
@@ -208,7 +208,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       // 找到一个着法后，首先判断吃到的棋子是否是对方棋子，技巧是利用"nOppSideTag"的标志(16和32颠倒)，
       // 如果是对方棋子，则保存MVV(LVA)值，即如果被吃子无保护，则只记MVV，否则记MVV-LVA(如果MVV>LVA的话)。
       pcCaptured = ucpcSquares[sqDst];
-      if ((pcCaptured & nOppSideTag) != 0) {
+      if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
         __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
         lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
         lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 5); // 帅(将)的价值是5
@@ -229,7 +229,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 仕(士)的价值是1
@@ -256,9 +256,12 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       sqDst = *lpucsqDst;
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == 0) {
+        if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
           pcCaptured = ucpcSquares[sqDst];
-          if ((pcCaptured & nOppSideTag) != 0) {
+          if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+            if (!LegalMove(MOVE(sqSrc, sqDst))) {
+                LegalMove(MOVE(sqSrc, sqDst));
+            }
             __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
             lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
             lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 相(象)的价值是1
@@ -287,9 +290,9 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       sqDst = *lpucsqDst;
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == 0) {
+        if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
           pcCaptured = ucpcSquares[sqDst];
-          if ((pcCaptured & nOppSideTag) != 0) {
+          if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
             __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
             lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
             lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 马的价值是3
@@ -316,7 +319,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
@@ -327,7 +330,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
@@ -340,7 +343,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
@@ -351,7 +354,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
@@ -374,7 +377,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
@@ -385,7 +388,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
@@ -398,7 +401,10 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+            if (!LegalMove(MOVE(sqSrc, sqDst))) {
+                LegalMove(MOVE(sqSrc, sqDst));
+            }
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
@@ -409,7 +415,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       __ASSERT_SQUARE(sqDst);
       if (sqDst != sqSrc) {
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
@@ -429,7 +435,7 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
         pcCaptured = ucpcSquares[sqDst];
-        if ((pcCaptured & nOppSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
           lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 2); // 兵(卒)的价值是2
@@ -444,8 +450,8 @@ int PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
 }
 
 // 不吃子着法生成器
-int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
-  int i, sqSrc, sqDst, x, y, nSideTag;
+int64_t PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
+  int64_t i, sqSrc, sqDst, x, y, nSideTag;
   SlideMoveStruct *lpsmv;
   uint8_t *lpucsqDst, *lpucsqPin;
   MoveStruct *lpmvsCurr;
@@ -463,7 +469,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
     while (sqDst != 0) {
       __ASSERT_SQUARE(sqDst);
       // 找到一个着法后，首先判断是否吃到棋子
-      if (ucpcSquares[sqDst] == 0) {
+      if (ucpcSquares[sqDst] == NO_PIECE) {
         __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
         lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
         lpmvsCurr ++;
@@ -482,7 +488,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = *lpucsqDst;
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[sqDst] == 0) {
+        if (ucpcSquares[sqDst] == NO_PIECE) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
           lpmvsCurr ++;
@@ -503,7 +509,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = *lpucsqDst;
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == 0 && ucpcSquares[sqDst] == 0) {
+        if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
           lpmvsCurr ++;
@@ -525,7 +531,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = *lpucsqDst;
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == 0 && ucpcSquares[sqDst] == 0) {
+        if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
           lpmvsCurr ++;
@@ -549,7 +555,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = lpsmv->ucNonCap[0] + RANK_DISP(y);
       __ASSERT_SQUARE(sqDst);
       while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == 0);
+        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
         __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
         lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
         lpmvsCurr ++;
@@ -558,7 +564,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = lpsmv->ucNonCap[1] + RANK_DISP(y);
       __ASSERT_SQUARE(sqDst);
       while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == 0);
+        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
         __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
         lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
         lpmvsCurr ++;
@@ -569,7 +575,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = lpsmv->ucNonCap[0] + FILE_DISP(x);
       __ASSERT_SQUARE(sqDst);
       while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == 0);
+        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
         __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
         lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
         lpmvsCurr ++;
@@ -578,7 +584,10 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = lpsmv->ucNonCap[1] + FILE_DISP(x);
       __ASSERT_SQUARE(sqDst);
       while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == 0);
+        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+        if (!LegalMove(MOVE(sqSrc, sqDst))) {
+            LegalMove(MOVE(sqSrc, sqDst));
+        }
         __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
         lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
         lpmvsCurr ++;
@@ -596,7 +605,7 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
       sqDst = *lpucsqDst;
       while (sqDst != 0) {
         __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[sqDst] == 0) {
+        if (ucpcSquares[sqDst] == NO_PIECE) {
           __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
           lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
           lpmvsCurr ++;
@@ -610,9 +619,9 @@ int PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
 }
 
 // “捉”的检测
-int PositionStruct::ChasedBy(int mv) const {
-  int i, nSideTag, pcMoved, pcCaptured;
-  int sqSrc, sqDst, x, y;
+int64_t PositionStruct::ChasedBy(int64_t mv) const {
+  int64_t i, nSideTag, pcMoved, pcCaptured;
+  int64_t sqSrc, sqDst, x, y;
   uint8_t *lpucsqDst, *lpucsqPin;
   SlideMoveStruct *lpsmv;
 
@@ -621,7 +630,7 @@ int PositionStruct::ChasedBy(int mv) const {
   nSideTag = SIDE_TAG(this->sdPlayer);
   __ASSERT_SQUARE(sqSrc);
   __ASSERT_PIECE(pcMoved);
-  __ASSERT_BOUND(0, pcMoved - OPP_SIDE_TAG(this->sdPlayer), 15);
+  __ASSERT_BOUND(0, pcMoved - OPP_SIDE_TAG(this->sdPlayer), 31);
 
   // “捉”的判断包括以下几部分内容：
   switch (pcMoved - OPP_SIDE_TAG(this->sdPlayer)) {
@@ -635,11 +644,11 @@ int PositionStruct::ChasedBy(int mv) const {
     sqDst = *lpucsqDst;
     while (sqDst != 0) {
       __ASSERT_SQUARE(sqDst);
-      if (ucpcSquares[*lpucsqPin] == 0) {
+      if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
         pcCaptured = this->ucpcSquares[sqDst];
-        if ((pcCaptured & nSideTag) != 0) {
+        if (IS_SAME_SIDE(pcCaptured, nSideTag)) {
           pcCaptured -= nSideTag;
-          __ASSERT_BOUND(0, pcCaptured, 15);
+          __ASSERT_BOUND(0, pcCaptured, 30);
           // 技巧：优化兵种判断的分枝
           if (pcCaptured <= ROOK_TO) {
             // 马捉仕(士)、相(象)和马的情况不予考虑

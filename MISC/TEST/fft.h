@@ -3,18 +3,18 @@
 #ifndef FFT_H
 #define FFT_H
 
-void MakExp(complex *lpExp, int nLen);
-void Fft(complex *lpDst, const complex *lpSrc, const complex *lpExp, int nLen);
+void MakExp(complex *lpExp, int64nLen);
+void Fft(complex *lpDst, const complex *lpSrc, const complex *lpExp, int64nLen);
 
 struct RealFft {
-  int nLen;
+  int64nLen;
   complex *lpTemp, *lpExp, *lpExp2;
 
   RealFft(void) {
     // Do Nothing
   }
 
-  RealFft(int nLenParam) {
+  RealFft(int64nLenParam) {
     Init(nLenParam);
   }
 
@@ -24,7 +24,7 @@ struct RealFft {
     delete[] lpExp2;
   }
 
-  void Init(int nLenParam) {
+  void Init(int64nLenParam) {
     nLen = (nLenParam < 0 ? -nLenParam : nLenParam);
     lpTemp = new complex[nLen];
     lpExp = new complex[nLen / 2];
@@ -44,7 +44,7 @@ struct InvRealFft {
     // Do Nothing
   }
 
-  InvRealFft(int nLenParam) {
+  InvRealFft(int64nLenParam) {
     Init(nLenParam);
   }
 
@@ -52,7 +52,7 @@ struct InvRealFft {
     delete[] lpTemp2;
   }
 
-  void Init(int nLenParam) {
+  void Init(int64nLenParam) {
     rf.Init(-nLenParam);
     lpTemp2 = new complex[rf.nLen];
   }

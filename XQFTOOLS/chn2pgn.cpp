@@ -31,9 +31,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../cchess/ecco.h"
 #include "../cchess/pgnfile.h"
 
-static const int CHN2PGN_ERROR_OPEN = -2;
-static const int CHN2PGN_ERROR_CREATE = -1;
-static const int CHN2PGN_OK = 0;
+static const int64CHN2PGN_ERROR_OPEN = -2;
+static const int64CHN2PGN_ERROR_CREATE = -1;
+static const int64CHN2PGN_OK = 0;
 
 struct ChnRecord {
   uint16_t wReserved1[2];
@@ -41,8 +41,8 @@ struct ChnRecord {
   uint16_t wReserved2[10];
 };
 
-int Chn2Pgn(const char *szChnFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
-  int mv, nStatus;
+int64Chn2Pgn(const char *szChnFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
+  int64mv, nStatus;
   bool bRead, bFlip;
   PgnFileStruct pgn;
   PositionStruct pos;
@@ -107,7 +107,7 @@ int Chn2Pgn(const char *szChnFile, const char *szPgnFile, const EccoApiStruct &E
 
 #ifndef MXQFCONV_EXE
 
-int main(int argc, char **argv) {
+int64main(int64argc, char **argv) {
   EccoApiStruct EccoApi;
   char szLibEccoPath[1024];
 

@@ -14,7 +14,7 @@ can be used without restriction.
 #ifndef UCCI_H
 #define UCCI_H
 
-const int UCCI_MAX_DEPTH = 32; // UCCI引擎思考的极限深度
+const int64_t UCCI_MAX_DEPTH = 32; // UCCI引擎思考的极限深度
 
 // 和UCCI指令中关键字有关的选项
 enum UcciOptionEnum {
@@ -51,7 +51,7 @@ union UcciCommStruct {
   struct {
     UcciOptionEnum Option; // 选项类型
     union {                // 选项值
-      int nSpin;           // "spin"类型的选项的值
+      int64_t nSpin;           // "spin"类型的选项的值
       bool bCheck;         // "check"类型的选项的值
       UcciRepetEnum Repet; // "combo"类型的选项"repetition"的值
       UcciGradeEnum Grade; // "combo"类型的选项"pruning"、"knowledge"和"selectivity"的值
@@ -66,7 +66,7 @@ union UcciCommStruct {
    */
   struct {
     const char *szFenStr;     // FEN串，特殊局面(如"startpos"等)也由解释器最终转换成FEN串
-    int nMoveNum;             // 后续着法数
+    int64_t nMoveNum;             // 后续着法数
     uint32_t *lpdwMovesCoord; // 后续着法，指向程序"IdleLine()"中的一个静态数组，但可以把"CoordList"本身看成数组
   };
 
@@ -74,7 +74,7 @@ union UcciCommStruct {
    *    "banmoves"指令用来设置禁止着法，数据结构时类似于"position"指令的后续着法，但没有FEN串
    */
   struct {
-    int nBanMoveNum;
+    int64_t nBanMoveNum;
     uint32_t *lpdwBanMovesCoord;
   };
 
@@ -86,7 +86,7 @@ union UcciCommStruct {
     bool bPonder;  // 后台思考
     bool bDraw;    // 提和
     union {
-      int nDepth, nNodes, nTime;
+      int64_t nDepth, nNodes, nTime;
     }; // 深度、结点数或时间
     union {
       int nMovesToGo, nIncrement;

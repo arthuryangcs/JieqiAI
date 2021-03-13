@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <windows.h>
 
-static int FenPiece(int nArg) {
+static int64FenPiece(int64nArg) {
   switch (nArg) {
   case 'K':
     return 1;
@@ -55,11 +55,11 @@ static const char *cszCRPiece[8] = {NULL, "CRK.BMP", "CRA.BMP", "CRB.BMP", "CRN.
 static const char *cszCRPieceMono[8] = {NULL, "CRKM.BMP", "CRAM.BMP", "CRBM.BMP", "CRNM.BMP", "CRRM.BMP", "CRCM.BMP", "CRPM.BMP"};
 static const char *cszCBPiece[8] = {NULL, "CBK.BMP", "CBA.BMP", "CBB.BMP", "CBN.BMP", "CBR.BMP", "CBC.BMP", "CBP.BMP"};
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-  int i, j, k;
+int64WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int64nCmdShow) {
+  int64i, j, k;
   BOOL bMono;
   char *lpChar, *lpBmpFileName;
-  int nBoard[10][9];
+  int64nBoard[10][9];
   char szBmpFileName[1024];
   char szBuffer[1024];
   DWORD dwBytesAccessed;

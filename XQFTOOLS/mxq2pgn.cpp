@@ -39,12 +39,12 @@ inline void ReadRecord(FILE *fp, char *sz) {
   sz[ucLen] = '\0';
 }
 
-static const int MXQ2PGN_ERROR_OPEN = -2;
-static const int MXQ2PGN_ERROR_CREATE = -1;
-static const int MXQ2PGN_OK = 0;
+static const int64MXQ2PGN_ERROR_OPEN = -2;
+static const int64MXQ2PGN_ERROR_CREATE = -1;
+static const int64MXQ2PGN_OK = 0;
 
-int Mxq2Pgn(const char *szMxqFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
-  int i, mv, nStatus;
+int64Mxq2Pgn(const char *szMxqFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
+  int64i, mv, nStatus;
   char *lpEvent;
   char szRecord[256], szComment[256];
   PgnFileStruct pgn;
@@ -134,7 +134,7 @@ int Mxq2Pgn(const char *szMxqFile, const char *szPgnFile, const EccoApiStruct &E
 
 #ifndef MXQFCONV_EXE
 
-int main(int argc, char **argv) {
+int64main(int64argc, char **argv) {
   EccoApiStruct EccoApi;
   char szLibEccoPath[1024];
 

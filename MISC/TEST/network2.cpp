@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "matrix.h"
 
-double Network1(int nHeight, int nWidth) {
-  int nMatLen = nWidth * nHeight + 1;
-  int nInDot, nOutDot, i, j;
+double Network1(int64nHeight, int64nWidth) {
+  int64nMatLen = nWidth * nHeight + 1;
+  int64nInDot, nOutDot, i, j;
   double dfCondSum;
   Matrix mtCurr(nMatLen, 1);
   Matrix mtCond(nMatLen, nMatLen);
@@ -44,9 +44,9 @@ double Network1(int nHeight, int nWidth) {
   return mtCurr.LeftDiv(mtCond)[nOutDot][0] * 2;
 }
 
-double Network2(int nHeight, int nWidth) {
-  int nMatLen = nWidth * nHeight + 1;
-  int nInDot, nOutDot, i, j;
+double Network2(int64nHeight, int64nWidth) {
+  int64nMatLen = nWidth * nHeight + 1;
+  int64nInDot, nOutDot, i, j;
   double dfCondSum;
   Matrix mtCurr(nMatLen, 1);
   Matrix mtCond(nMatLen, nMatLen);
@@ -91,10 +91,10 @@ double Network2(int nHeight, int nWidth) {
   return mtCurr.LeftDiv(mtCond)[nOutDot][0] * 2;
 }
 
-const int ADDIT_HEIGHT = 10;
+const int64ADDIT_HEIGHT = 10;
 
-int main(void) {
-  int nHeight, nWidth;
+int64main(void) {
+  int64nHeight, nWidth;
   double dfR1, dfR2, dfR3, dfLastR2, dfLastR3;
   int64_t llTime;
   nWidth = 1;

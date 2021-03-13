@@ -25,13 +25,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../base/pipe.h"
 #include "../eleeye/position.h"
 
-const int MAX_CHAR = 1024;      // 配置文件的最大长度
-const int MAX_IRREV_POS = 33;   // 不可逆局面的最大个数，整个棋局吃子数不会超过32个
-const int MAX_IRREV_MOVE = 200; // 不可逆局面的最大着法数，不吃子着法必须限制在100回合以内
-const int MAX_BAN_MOVE = 128;   // 最多的禁止着法数
-const int MAX_INFO = 16;        // 版本信息的最大行数
-const int MAX_OPTION = 16;      // 选项设置的最大行数
-const int MAX_LEVEL = 16;       // 难度的最高级别数
+const int64MAX_CHAR = 1024;      // 配置文件的最大长度
+const int64MAX_IRREV_POS = 33;   // 不可逆局面的最大个数，整个棋局吃子数不会超过32个
+const int64MAX_IRREV_MOVE = 200; // 不可逆局面的最大着法数，不吃子着法必须限制在100回合以内
+const int64MAX_BAN_MOVE = 128;   // 最多的禁止着法数
+const int64MAX_INFO = 16;        // 版本信息的最大行数
+const int64MAX_OPTION = 16;      // 选项设置的最大行数
+const int64MAX_LEVEL = 16;       // 难度的最高级别数
 
 
 /* 以下常量代表适配器的思考状态，后台思考的处理是一大难点：
@@ -46,47 +46,47 @@ const int MAX_LEVEL = 16;       // 难度的最高级别数
  * (9) "IDLE_PONDER_FINISHED"状态下，如果对手给出的着法让后台思考命中，就转入后台思考完成并且命中状态(IDLE_PONDERHIT_FINISHED)；
  * (10) "IDLE_PONDERHIT_FINISHED"状态下，如果收到思考指令，就立即给出"mvPonderFinished"着法；
  */
-const int IDLE_NONE = 0;
-const int IDLE_PONDER_FINISHED = 1;
-const int IDLE_PONDERHIT_FINISHED = 2;
-const int BUSY_WAIT = 3;
-const int BUSY_THINK = 4;
-const int BUSY_HINTS = 5;
-const int BUSY_PONDER = 6;
-const int BUSY_PONDERHIT = 7;
+const int64IDLE_NONE = 0;
+const int64IDLE_PONDER_FINISHED = 1;
+const int64IDLE_PONDERHIT_FINISHED = 2;
+const int64BUSY_WAIT = 3;
+const int64BUSY_THINK = 4;
+const int64BUSY_HINTS = 5;
+const int64BUSY_PONDER = 6;
+const int64BUSY_PONDERHIT = 7;
 
 static struct {
   // 适配器状态选项
   bool bDebug, bUcciOkay, bBgThink;       // 是否调试模式，UCCI引擎是否启动，后台思考是否启用
-  int nLevel, nStatus;                    // 级别和状态
-  int mvPonder, mvPonderFinished;         // 后台思考的猜测着法和后台思考完成的着法
-  int mvPonderFinishedPonder;             // 后台思考结束后，思考结果的后台思考猜测着法
+  int64nLevel, nStatus;                    // 级别和状态
+  int64mvPonder, mvPonderFinished;         // 后台思考的猜测着法和后台思考完成的着法
+  int64mvPonderFinishedPonder;             // 后台思考结束后，思考结果的后台思考猜测着法
   // 适配器局面信息
-  int nIrrevPosNum;                       // 当前不可逆局面的个数
+  int64nIrrevPosNum;                       // 当前不可逆局面的个数
   PositionStruct posIrrev[MAX_IRREV_POS]; // 不可逆局面列表，组成了适配器的内部局面
   char szIrrevFen[MAX_IRREV_POS][128];    // 每组不可逆局面的起始局面的FEN串
-  int nBanMoveNum;                        // 禁止着法个数，局面改动后就置零
-  int wmvBanList[MAX_BAN_MOVE];           // 禁止着法列表
+  int64nBanMoveNum;                        // 禁止着法个数，局面改动后就置零
+  int64wmvBanList[MAX_BAN_MOVE];           // 禁止着法列表
   // 适配器输入输出通道
   PipeStruct pipeStdin, pipeEngine;       // 标准输入(浅红象棋指令)和UCCI引擎管道，参阅"pipe.cpp"
   // UCCI引擎配置信息
   char szIniFile[MAX_CHAR];                            // 适配器配置文件"UCCI2QH.INI"的全路径
-  int nInfoNum, nOptionNum, nLevelNum;                 // 版本信息行数、选项设置行数和难度级别数
+  int64nInfoNum, nOptionNum, nLevelNum;                 // 版本信息行数、选项设置行数和难度级别数
   char szEngineName[MAX_CHAR], szEngineFile[MAX_CHAR]; // UCCI引擎名称和UCCI引擎程序文件的全路径
   char szInfoStrings[MAX_INFO][MAX_CHAR], szOptionStrings[MAX_OPTION][MAX_CHAR]; // 版本信息和选项设置
   char szLevelStrings[MAX_LEVEL][MAX_CHAR], szThinkModes[MAX_LEVEL][MAX_CHAR];   // 难度级别和各个难度级别下的思考模式
 } Ucci2QH;
 
 // ICCS格式转换为着法结构
-inline int ICCS_MOVE(const char *szIccs) {
-  int sqSrc, sqDst;
+inline int64ICCS_MOVE(const char *szIccs) {
+  int64sqSrc, sqDst;
   sqSrc = COORD_XY(szIccs[0] - 'A' + FILE_LEFT, '9' + RANK_TOP - szIccs[1]);
   sqDst = COORD_XY(szIccs[3] - 'A' + FILE_LEFT, '9' + RANK_TOP - szIccs[4]);
   return MOVE(sqSrc, sqDst);
 }
 
 // 着法结构转换为ICCS格式
-inline void MOVE_ICCS(char *szIccs, int mv) {
+inline void MOVE_ICCS(char *szIccs, int64mv) {
   szIccs[0] = (FILE_X(SRC(mv))) + 'A' - FILE_LEFT;
   szIccs[1] = '9' + RANK_TOP - (RANK_Y(SRC(mv)));
   szIccs[2] = '-';
@@ -96,7 +96,7 @@ inline void MOVE_ICCS(char *szIccs, int mv) {
 }
 
 // 设置适配器状态(在调试模式下，显示该状态)
-static void SetStatus(int nArg) {
+static void SetStatus(int64nArg) {
   Ucci2QH.nStatus = nArg;
   if (Ucci2QH.bDebug) {
     fprintf(stderr, "Adapter Info: Status = ");
@@ -177,7 +177,7 @@ inline bool UCCI2Adapter(char *szLineStr) {
 }
 
 // 浅红模式下更新内部局面的过程
-static bool MakeMove(int mv) {
+static bool MakeMove(int64mv) {
   if (mv == 0 || Ucci2QH.posIrrev[Ucci2QH.nIrrevPosNum].ucpcSquares[SRC(mv)] == 0) {
     return false;
   }
@@ -206,7 +206,7 @@ static bool MakeMove(int mv) {
   }
 }
 
-inline int PieceChar(int pc) {
+inline int64PieceChar(int64pc) {
   if (pc < 16) {
     return '.';
   } else if (pc < 32) {
@@ -218,7 +218,7 @@ inline int PieceChar(int pc) {
 
 // 把局面打印到屏幕上
 static void PrintPosition(const PositionStruct &pos) {
-  int i, j;
+  int64i, j;
   for (i = 3; i <= 12; i ++) {
     for (j = 3; j <= 11; j ++) {
       printf("%c", PieceChar(pos.ucpcSquares[i * 16 + j]));
@@ -240,7 +240,7 @@ static void PrintPosition(const PositionStruct &pos) {
 
 // 给UCCI引擎发送思考指令
 static void RunEngine(void) {
-  int i;
+  int64i;
   uint32_t dwMoveStr;
   char *lp;
   char szLineStr[LINE_INPUT_MAX_CHAR];
@@ -283,7 +283,7 @@ static void RunEngine(void) {
 
 // UCCI反馈信息的接收过程
 static bool ReceiveUCCI(void) {
-  int mv;
+  int64mv;
   char *lp;
   char szIccs[8];
   char szLineStr[LINE_INPUT_MAX_CHAR];
@@ -384,8 +384,8 @@ static void StopEngine(void) {
 
 // 浅红象棋指令的接收过程
 static bool ReceiveQH(void) {
-  int i, j;
-  int mv;
+  int64i, j;
+  int64mv;
   int64_t llTime;
   char *lp;
   char szIccs[8];
@@ -615,12 +615,12 @@ static bool ReceiveQH(void) {
 }
 
 // 主函数
-int main(int argc, char **argv) {
+int64main(int64argc, char **argv) {
   int64_t llTime;
   char szLineStr[MAX_CHAR];
   char *lp;
   FILE *fpIniFile;
-  int i, nCurrLevel;
+  int64i, nCurrLevel;
 
   if (argc < 2) {
     return 0;

@@ -140,7 +140,7 @@ bool PipeStruct::CheckInput(void) {
 
 void PipeStruct::LineOutput(const char *szLineStr) const {
   DWORD dwBytes;
-  int nStrLen;
+  int64nStrLen;
   char szWriteBuffer[LINE_INPUT_MAX_CHAR];
   nStrLen = strlen(szLineStr);
   memcpy(szWriteBuffer, szLineStr, nStrLen);
@@ -198,7 +198,7 @@ void PipeStruct::Close(void) const {
 }
 
 void PipeStruct::ReadInput(void) {
-  int n;
+  int64_t n;
   n = read(nInput, szBuffer + nReadEnd, LINE_INPUT_MAX_CHAR - nReadEnd);
   if (n < 0) {
     nEof = 1;
@@ -210,7 +210,7 @@ void PipeStruct::ReadInput(void) {
 bool PipeStruct::CheckInput(void) {
   fd_set set;
   timeval tv;
-  int val;
+  int64_t val;
   FD_ZERO(&set);
   FD_SET(nInput, &set);
   tv.tv_sec = 0;
@@ -220,7 +220,7 @@ bool PipeStruct::CheckInput(void) {
 }
 
 void PipeStruct::LineOutput(const char *szLineStr) const {
-  int nStrLen;
+  int64_t nStrLen;
   char szWriteBuffer[LINE_INPUT_MAX_CHAR];
   nStrLen = strlen(szLineStr);
   memcpy(szWriteBuffer, szLineStr, nStrLen);
@@ -232,7 +232,7 @@ void PipeStruct::LineOutput(const char *szLineStr) const {
 
 bool PipeStruct::GetBuffer(char *szLineStr) {
   char *lpFeedEnd;
-  int nFeedEnd;
+  int64_t nFeedEnd;
   lpFeedEnd = (char *) memchr(szBuffer, '\n', nReadEnd);
   if (lpFeedEnd == NULL) {
     return false;

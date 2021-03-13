@@ -40,10 +40,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 // 偷懒评价的边界
-const int EVAL_MARGIN1 = 160;
-const int EVAL_MARGIN2 = 80;
-const int EVAL_MARGIN3 = 40;
-const int EVAL_MARGIN4 = 20;
+const int64_t EVAL_MARGIN1 = 160;
+const int64_t EVAL_MARGIN2 = 80;
+const int64_t EVAL_MARGIN3 = 40;
+const int64_t EVAL_MARGIN4 = 20;
 
 // 本模块只涉及到"PositionStruct"中的"sdPlayer"、"ucpcSquares"、"ucsqPieces"和"wBitPiece"四个成员，故省略前面的"this->"
 
@@ -63,18 +63,18 @@ const int EVAL_MARGIN4 = 20;
  * 4. 其他情况，包括帅(将)不在原位或缺仕(士)，都编号0。
  * 注：以“红下黑上”这个固定的棋盘方位来规定左右。
  */
-const int WHITE_KING_BITFILE = 1 << (RANK_BOTTOM - RANK_TOP);
-const int BLACK_KING_BITFILE = 1 << (RANK_TOP - RANK_TOP);
-const int KING_BITRANK = 1 << (FILE_CENTER - FILE_LEFT);
+const int64_t WHITE_KING_BITFILE = 1 << (RANK_BOTTOM - RANK_TOP);
+const int64_t BLACK_KING_BITFILE = 1 << (RANK_TOP - RANK_TOP);
+const int64_t KING_BITRANK = 1 << (FILE_CENTER - FILE_LEFT);
 
-const int SHAPE_NONE = 0;
-const int SHAPE_CENTER = 1;
-const int SHAPE_LEFT = 2;
-const int SHAPE_RIGHT = 3;
+const int64_t SHAPE_NONE = 0;
+const int64_t SHAPE_CENTER = 1;
+const int64_t SHAPE_LEFT = 2;
+const int64_t SHAPE_RIGHT = 3;
 
-int PositionStruct::AdvisorShape(void) const {
-  int pcCannon, pcRook, sq, sqAdv1, sqAdv2, x, y, nShape;
-  int vlWhitePenalty, vlBlackPenalty;
+int64_t PositionStruct::AdvisorShape(void) const {
+  int64_t pcCannon, pcRook, sq, sqAdv1, sqAdv2, x, y, nShape;
+  int64_t vlWhitePenalty, vlBlackPenalty;
   SlideMaskStruct *lpsms;
   vlWhitePenalty = vlBlackPenalty = 0;
   if ((this->wBitPiece[0] & ADVISOR_BITPIECE) == ADVISOR_BITPIECE) {
@@ -256,8 +256,9 @@ int PositionStruct::AdvisorShape(void) const {
 
 // 常数表"cnValuableStringPieces"用判断牵制是否有价值
 // 大于0的项是对于车来说的，牵制马和炮(被牵制)都有价值，大于1的项是对于炮来说只有牵制马才有价值
-static const int cnValuableStringPieces[48] = {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+static const int64_t cnValuableStringPieces[64] = {
+  0, 0, 0, 0, 0, 2, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 2, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 2, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 2, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0
 };
@@ -301,10 +302,10 @@ static const char ccvlStringValueTab[512] = {
 };
 
 // 车或炮牵制帅(将)或车的棋型的评价
-int PositionStruct::StringHold(void) const {
-  int sd, i, j, nDir, sqSrc, sqDst, sqStr;
-  int x, y, nSideTag, nOppSideTag;
-  int vlString[2];
+int64_t PositionStruct::StringHold(void) const {
+  int64_t sd, i, j, nDir, sqSrc, sqDst, sqStr;
+  int64_t x, y, nSideTag, nOppSideTag;
+  int64_t vlString[2];
   SlideMoveStruct *lpsmv;
 
   for (sd = 0; sd < 2; sd ++) {
@@ -331,9 +332,9 @@ int PositionStruct::StringHold(void) const {
               sqStr = lpsmv->ucRookCap[nDir] + FILE_DISP(x);
               __ASSERT_SQUARE(sqStr);
               // 被牵制子必须是对方的子，下同
-              if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
+              if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
                 // 如果被牵制子是有价值的，而且被牵制子没有保护(被目标子保护不算)，那么牵制是有价值的，下同
-                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
+                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > NO_PIECE &&
                     !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                   vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                 }
@@ -345,8 +346,8 @@ int PositionStruct::StringHold(void) const {
             if (sqDst == lpsmv->ucCannonCap[nDir] + RANK_DISP(y)) {
               sqStr = lpsmv->ucRookCap[nDir] + RANK_DISP(y);
               __ASSERT_SQUARE(sqStr);
-              if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
-                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
+              if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
+                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > NO_PIECE &&
                     !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                   vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                 }
@@ -367,9 +368,9 @@ int PositionStruct::StringHold(void) const {
               if (sqDst == lpsmv->ucCannonCap[nDir] + FILE_DISP(x)) {
                 sqStr = lpsmv->ucRookCap[nDir] + FILE_DISP(x);
                 __ASSERT_SQUARE(sqStr);
-                if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
+                if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
                   // 目标子是车，不同于帅(将)，要求车也没有保护时才有牵制价值，下同
-                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
+                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > NO_PIECE &&
                       !this->Protected(OPP_SIDE(sd), sqDst) && !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                     vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                   }
@@ -381,8 +382,8 @@ int PositionStruct::StringHold(void) const {
               if (sqDst == lpsmv->ucCannonCap[nDir] + RANK_DISP(y)) {
                 sqStr = lpsmv->ucRookCap[nDir] + RANK_DISP(y);
                 __ASSERT_SQUARE(sqStr);
-                if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
-                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
+                if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
+                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > NO_PIECE &&
                       !this->Protected(OPP_SIDE(sd), sqDst) && !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                     vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                   }
@@ -411,8 +412,8 @@ int PositionStruct::StringHold(void) const {
             if (sqDst == lpsmv->ucSuperCap[nDir] + FILE_DISP(x)) {
               sqStr = lpsmv->ucCannonCap[nDir] + FILE_DISP(x);
               __ASSERT_SQUARE(sqStr);
-              if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
-                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 1 &&
+              if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
+                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
                     !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                   vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                 }
@@ -424,8 +425,8 @@ int PositionStruct::StringHold(void) const {
             if (sqDst == lpsmv->ucSuperCap[nDir] + RANK_DISP(y)) {
               sqStr = lpsmv->ucCannonCap[nDir] + RANK_DISP(y);
               __ASSERT_SQUARE(sqStr);
-              if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
-                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 1 &&
+              if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
+                if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
                     !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                   vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                 }
@@ -446,8 +447,8 @@ int PositionStruct::StringHold(void) const {
               if (sqDst == lpsmv->ucSuperCap[nDir] + FILE_DISP(x)) {
                 sqStr = lpsmv->ucCannonCap[nDir] + FILE_DISP(x);
                 __ASSERT_SQUARE(sqStr);
-                if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
-                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 1 &&
+                if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
+                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
                       !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                     vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                   }
@@ -459,8 +460,8 @@ int PositionStruct::StringHold(void) const {
               if (sqDst == lpsmv->ucSuperCap[nDir] + RANK_DISP(y)) {
                 sqStr = lpsmv->ucCannonCap[nDir] + RANK_DISP(y);
                 __ASSERT_SQUARE(sqStr);
-                if ((this->ucpcSquares[sqStr] & nOppSideTag) != 0) {
-                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 1 &&
+                if (IS_SAME_SIDE(this->ucpcSquares[sqStr], nOppSideTag)) {
+                  if (cnValuableStringPieces[this->ucpcSquares[sqStr]] > 0 &&
                       !this->Protected(OPP_SIDE(sd), sqStr, sqDst)) {
                     vlString[sd] += ccvlStringValueTab[sqDst - sqStr + 256];
                   }
@@ -479,9 +480,9 @@ int PositionStruct::StringHold(void) const {
 
 // 以下是第三部分，车的灵活性的评价
 
-int PositionStruct::RookMobility(void) const {
-  int sd, i, sqSrc, nSideTag, x, y;
-  int vlRookMobility[2];
+int64_t PositionStruct::RookMobility(void) const {
+  int64_t sd, i, sqSrc, nSideTag, x, y;
+  int64_t vlRookMobility[2];
   for (sd = 0; sd < 2; sd ++) {
     vlRookMobility[sd] = 0;
     nSideTag = SIDE_TAG(sd);
@@ -524,10 +525,10 @@ static const bool cbcEdgeSquares[256] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-int PositionStruct::KnightTrap(void) const {
-  int sd, i, sqSrc, sqDst, nSideTag, nMovable;
+int64_t PositionStruct::KnightTrap(void) const {
+  int64_t sd, i, sqSrc, sqDst, nSideTag, nMovable;
   uint8_t *lpucsqDst, *lpucsqPin;
-  int vlKnightTraps[2];
+  int64_t vlKnightTraps[2];
 
   for (sd = 0; sd < 2; sd ++) {
     vlKnightTraps[sd] = 0;
@@ -544,8 +545,8 @@ int PositionStruct::KnightTrap(void) const {
         while (sqDst != 0) {
           __ASSERT_SQUARE(sqDst);
           // 以下的判断区别于"genmoves.cpp"中的着法生成器，排除了走到棋盘边缘和走到对方控制格的着法
-          if (!cbcEdgeSquares[sqDst] && this->ucpcSquares[sqDst] == 0 &&
-              this->ucpcSquares[*lpucsqPin] == 0 && !this->Protected(OPP_SIDE(sd), sqDst)) {
+          if (!cbcEdgeSquares[sqDst] && this->ucpcSquares[sqDst] == NO_PIECE &&
+              this->ucpcSquares[*lpucsqPin] == NO_PIECE && !this->Protected(OPP_SIDE(sd), sqDst)) {
             nMovable ++;
             if (nMovable > 1) {
               break;
@@ -571,8 +572,8 @@ int PositionStruct::KnightTrap(void) const {
 // 以上是第四部分，马受到阻碍的评价
 
 // 局面评价过程
-int PositionStruct::Evaluate(int vlAlpha, int vlBeta) const {
-  int vl;
+int64_t PositionStruct::Evaluate(int64_t vlAlpha, int64_t vlBeta) const {
+  int64_t vl;
   // 偷懒的局面评价函数分以下几个层次：
 
   // 1. 四级偷懒评价(彻底偷懒评价)，只包括子力平衡；

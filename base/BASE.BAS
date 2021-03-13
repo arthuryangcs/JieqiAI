@@ -71,7 +71,7 @@ Private Declare Sub GetClassNameA Lib "USER32.DLL" (ByVal hWnd As Long, ByVal lp
 Private Declare Sub GetWindowRect Lib "USER32.DLL" (ByVal hWnd As Long, ByVal lpRect As Long)
 Private Declare Sub GetClientRect Lib "USER32.DLL" (ByVal hWnd As Long, ByVal lpRect As Long)
 Private Declare Sub SendMessageA Lib "USER32.DLL" (ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long)
-Private Declare Sub MoveWindow Lib "USER32.DLL" (ByVal hWnd As Long, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long)
+Private Declare Sub MoveWindow Lib "USER32.DLL" (ByVal hWnd As Long, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint64As Long)
 Private Declare Function FindWindowExA Lib "USER32.DLL" (Optional ByVal hWndParent As Long = 0, Optional ByVal hwndChildAfter As Long = 0, _
         Optional ByVal szClassName As String = vbNullString, Optional ByVal szWindowName As String = vbNullString) As Long
 Private Declare Function CreateWindowExA Lib "USER32.DLL" (ByVal dwExStyle As Long, ByVal lpClassName As String, ByVal lpWindowName As String, ByVal dwStyle As Long, _
@@ -227,18 +227,18 @@ End Function
 Public Function Dbl2Int(ByVal df As Double, Optional ByVal nMin As Integer = -32767, Optional ByVal nMax As Integer = 32767) As Integer
 
 If df < nMin Then
-    Dbl2Int = nMin
+    Dbl2int64= nMin
 ElseIf df > nMax Then
-    Dbl2Int = nMax
+    Dbl2int64= nMax
 Else
-    Dbl2Int = df
+    Dbl2int64= df
 End If
 
 End Function
 
 Public Function Str2Int(ByVal sz As String, Optional ByVal nMin As Integer = -32767, Optional ByVal nMax As Integer = 32767) As Integer
 
-Str2Int = Dbl2Int(Val(sz), nMin, nMax)
+Str2int64= Dbl2Int(Val(sz), nMin, nMax)
 
 End Function
 

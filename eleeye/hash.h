@@ -28,12 +28,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define HASH_H
 
 // 置换表标志，只用在"RecordHash()"函数中
-const int HASH_BETA = 1;
-const int HASH_ALPHA = 2;
-const int HASH_PV = HASH_ALPHA | HASH_BETA;
+const int64_t HASH_BETA = 1;
+const int64_t HASH_ALPHA = 2;
+const int64_t HASH_PV = HASH_ALPHA | HASH_BETA;
 
-const int HASH_LAYERS = 2;   // 置换表的层数
-const int NULL_DEPTH = 2;    // 空着裁剪的深度
+const int64_t HASH_LAYERS = 2;   // 置换表的层数
+const int64_t NULL_DEPTH = 2;    // 空着裁剪的深度
 
 // 置换表结构，置换表信息夹在两个Zobrist校验锁中间，可以防止存取冲突
 struct HashStruct {
@@ -45,7 +45,7 @@ struct HashStruct {
 }; // hsh
 
 // 置换表信息
-extern int nHashMask;              // 置换表的大小
+extern int64_t nHashMask;              // 置换表的大小
 extern HashStruct *hshItems;       // 置换表的指针，ElephantEye采用多层的置换表
 #ifdef HASH_QUIESC
   extern HashStruct *hshItemsQ;
@@ -58,7 +58,7 @@ inline void ClearHash(void) {         // 清空置换表
 #endif
 }
 
-inline void NewHash(int nHashScale) { // 分配置换表，大小是 2^nHashScale 字节
+inline void NewHash(int64_t nHashScale) { // 分配置换表，大小是 2^nHashScale 字节
   nHashMask = ((1 << nHashScale) / sizeof(HashStruct)) - 1;
   hshItems = new HashStruct[nHashMask + 1];
 #ifdef HASH_QUIESC
@@ -80,16 +80,16 @@ inline bool HASH_POS_EQUAL(const HashStruct &hsh, const PositionStruct &pos) {
 }
 
 // 按局面和层数获取置换表项(返回一个引用，可以对其赋值)
-inline HashStruct &HASH_ITEM(const PositionStruct &pos, int nLayer) {
+inline HashStruct &HASH_ITEM(const PositionStruct &pos, int64_t nLayer) {
   return hshItems[(pos.zobr.dwKey + nLayer) & nHashMask];
 }
 
 // 置换表的管理过程
-void RecordHash(const PositionStruct &pos, int nFlag, int vl, int nDepth, int mv);                    // 存储置换表局面信息
-int ProbeHash(const PositionStruct &pos, int vlAlpha, int vlBeta, int nDepth, bool bNoNull, int &mv); // 获取置换表局面信息
+void RecordHash(const PositionStruct &pos, int64_t nFlag, int64_t vl, int64_t nDepth, int64_t mv);                    // 存储置换表局面信息
+int64_t ProbeHash(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, bool bNoNull, int64_t &mv); // 获取置换表局面信息
 #ifdef HASH_QUIESC
-  void RecordHashQ(const PositionStruct &pos, int vlBeta, int vlAlpha); // 存储置换表局面信息(静态搜索)
-  int ProbeHashQ(const PositionStruct &pos, int vlAlpha, int vlBeta);   // 获取置换表局面信息(静态搜索)
+  void RecordHashQ(const PositionStruct &pos, int64_t vlBeta, int64_t vlAlpha); // 存储置换表局面信息(静态搜索)
+  int64_t ProbeHashQ(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta);   // 获取置换表局面信息(静态搜索)
 #endif
 
 #ifndef CCHESS_A3800

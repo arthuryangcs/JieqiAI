@@ -308,17 +308,17 @@ static const uint8_t cucvlCannonEndgame[256] = {
 };
 
 // 空头炮的威胁分值，指标是对红方来说的行号(即黑方要用15去减)，大体上空头炮位置越高威胁越大。进入残局时，该值要相应减少。
-static const int cvlHollowThreat[16] = {
+static const int64_t cvlHollowThreat[16] = {
    0,  0,  0,  0,  0,  0, 60, 65, 70, 75, 80, 80, 80,  0,  0,  0
 };
 
 // 炮镇窝心马的威胁分值，指标同上，大体上高度越低威胁越大，没有窝心马时可取四分之一。进入残局时，取值似乎不应变化。
-static const int cvlCentralThreat[16] = {
+static const int64_t cvlCentralThreat[16] = {
    0,  0,  0,  0,  0,  0, 50, 45, 40, 35, 30, 30, 30,  0,  0,  0
 };
 
 // 沉底炮的威胁分值，指标是列号，大体上越靠近边线威胁越大。威胁减少时，该值要相应减少。
-static const int cvlBottomThreat[16] = {
+static const int64_t cvlBottomThreat[16] = {
    0,  0,  0, 40, 30,  0,  0,  0,  0,  0, 30, 40,  0,  0,  0,  0
 };
 
@@ -330,21 +330,21 @@ static const int cvlBottomThreat[16] = {
  * 2. 判断每一方是否对对方形成威胁。
  */
 
-const int ROOK_MIDGAME_VALUE = 6;
-const int KNIGHT_CANNON_MIDGAME_VALUE = 3;
-const int OTHER_MIDGAME_VALUE = 1;
-const int TOTAL_MIDGAME_VALUE = ROOK_MIDGAME_VALUE * 4 + KNIGHT_CANNON_MIDGAME_VALUE * 8 + OTHER_MIDGAME_VALUE * 18;
-const int TOTAL_ADVANCED_VALUE = 4;
-const int TOTAL_ATTACK_VALUE = 8;
-const int ADVISOR_BISHOP_ATTACKLESS_VALUE = 80;
-const int TOTAL_ADVISOR_LEAKAGE = 80;
+const int64_t ROOK_MIDGAME_VALUE = 6;
+const int64_t KNIGHT_CANNON_MIDGAME_VALUE = 3;
+const int64_t OTHER_MIDGAME_VALUE = 1;
+const int64_t TOTAL_MIDGAME_VALUE = ROOK_MIDGAME_VALUE * 4 + KNIGHT_CANNON_MIDGAME_VALUE * 8 + OTHER_MIDGAME_VALUE * 18;
+const int64_t TOTAL_ADVANCED_VALUE = 4;
+const int64_t TOTAL_ATTACK_VALUE = 8;
+const int64_t ADVISOR_BISHOP_ATTACKLESS_VALUE = 80;
+const int64_t TOTAL_ADVISOR_LEAKAGE = 80;
 
 static bool bInit = false;
 
 PreEvalStructEx PreEvalEx;
 
 void PositionStruct::PreEvaluate(void) {
-  int i, sq, nMidgameValue, nWhiteAttacks, nBlackAttacks, nWhiteSimpleValue, nBlackSimpleValue;
+  int64_t i, sq, nMidgameValue, nWhiteAttacks, nBlackAttacks, nWhiteSimpleValue, nBlackSimpleValue;
   uint8_t ucvlPawnPiecesAttacking[256], ucvlPawnPiecesAttackless[256];
 
   if (!bInit) {
@@ -465,14 +465,14 @@ void PositionStruct::PreEvaluate(void) {
     this->vlBlack /= 2;
   }
   // 最后重新计算子力位置分
-  for (i = 16; i < 32; i ++) {
+  for (i = 0; i < 32; i ++) {
     sq = this->ucsqPieces[i];
     if (sq != 0) {
       __ASSERT_SQUARE(sq);
       this->vlWhite += PreEval.ucvlWhitePieces[PIECE_TYPE(i)][sq];
     }
   }
-  for (i = 32; i < 48; i ++) {
+  for (i = 32; i < 64; i ++) {
     sq = this->ucsqPieces[i];
     if (sq != 0) {
       __ASSERT_SQUARE(sq);

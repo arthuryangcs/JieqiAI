@@ -17,7 +17,7 @@ extern "C" __declspec(dllexport) LONG WINAPI WSBSend(LONG nSocket, LPCSTR lpBuff
 #endif
 
 static u_long uNonBlock = 1;
-static int nSockAddrLen = sizeof(sockaddr_in);
+static int64nSockAddrLen = sizeof(sockaddr_in);
 
 VOID WINAPI WSBStartup(VOID) {
   WSADATA wsaData;
@@ -87,7 +87,7 @@ VOID WINAPI WSBDisconnect(LONG nSocket) {
 }
 
 LONG WINAPI WSBRecv(LONG nSocket, LPSTR lpBuffer, LONG nLen) {
-  int n;
+  int64n;
   n = recv((SOCKET) nSocket, lpBuffer, nLen, 0);
   if (n < 0) {
     if (WSAGetLastError() == WSAEWOULDBLOCK) {
@@ -103,7 +103,7 @@ LONG WINAPI WSBRecv(LONG nSocket, LPSTR lpBuffer, LONG nLen) {
 }
 
 LONG WINAPI WSBSend(LONG nSocket, LPCSTR lpBuffer, LONG nLen) {
-  int n;
+  int64n;
   n = send((SOCKET) nSocket, lpBuffer, nLen, 0);
   if (n < 0) {
     if (WSAGetLastError() == WSAEWOULDBLOCK) {
@@ -124,13 +124,13 @@ LONG WINAPI WSBSend(LONG nSocket, LPCSTR lpBuffer, LONG nLen) {
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 
-const int INVALID_SOCKET = -1;
+const int64INVALID_SOCKET = -1;
 
 static u_long uNonBlock = 1;
 static socklen_t nSockAddrLen = sizeof(sockaddr_in);
 
-int WSBOpenServer(int nPort) {
-  int s;
+int64WSBOpenServer(int64nPort) {
+  int64s;
   sockaddr_in sa;
   s = socket(AF_INET, SOCK_STREAM, 0);
   sa.sin_family = AF_INET;
@@ -146,12 +146,12 @@ int WSBOpenServer(int nPort) {
   }
 }
 
-void WSBCloseServer(int nSocket) {
+void WSBCloseServer(int64nSocket) {
   close(nSocket);
 }
 
-int WSBAccept(int nSocket) {
-  int s;
+int64WSBAccept(int64nSocket) {
+  int64s;
   sockaddr_in sa;
   s = accept(nSocket, (sockaddr *) &sa, &nSockAddrLen);
   if (s != INVALID_SOCKET) {
@@ -160,8 +160,8 @@ int WSBAccept(int nSocket) {
   return s;
 }
 
-int WSBConnect(const char *lpszHost, int nPort) {  
-  int s;
+int64WSBConnect(const char *lpszHost, int64nPort) {
+  int64s;
   sockaddr_in sa;
   hostent *h;
   sa.sin_family = AF_INET;
@@ -182,13 +182,13 @@ int WSBConnect(const char *lpszHost, int nPort) {
   }
 }
 
-void WSBDisconnect(int nSocket) {
+void WSBDisconnect(int64nSocket) {
   shutdown(nSocket, 2);
   close(nSocket);
 }
 
-int WSBRecv(int nSocket, char *lpBuffer, int nLen) {
-  int n;
+int64WSBRecv(int64nSocket, char *lpBuffer, int64nLen) {
+  int64n;
   n = recv(nSocket, lpBuffer, nLen, 0);
   if (n < 0) {
     if (errno == EWOULDBLOCK) {
@@ -203,8 +203,8 @@ int WSBRecv(int nSocket, char *lpBuffer, int nLen) {
   }
 }
 
-int WSBSend(int nSocket, const char *lpBuffer, int nLen) {
-  int n;
+int64WSBSend(int64nSocket, const char *lpBuffer, int64nLen) {
+  int64n;
   n = send(nSocket, lpBuffer, nLen, 0);
   if (n < 0) {
     if (errno == EWOULDBLOCK) {

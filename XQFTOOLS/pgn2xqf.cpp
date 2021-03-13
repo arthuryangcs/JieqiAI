@@ -48,28 +48,28 @@ static const char ccSquare2Xqf[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-static const int cpcXqf2Piece[32] = {
+static const int64cpcXqf2Piece[32] = {
   23, 21, 19, 17, 16, 18, 20, 22, 24, 25, 26, 27, 28, 29, 30, 31,
   39, 37, 35, 33, 32, 34, 36, 38, 40, 41, 42, 43, 44, 45, 46, 47
 };
 
-static const int cnResultTrans[4] = {
+static const int64cnResultTrans[4] = {
   0, 1, 3, 2
 };
 
-inline void SetXqfString(char *sz, const char *szValue, int nMaxLen) {
-  int nLen;
+inline void SetXqfString(char *sz, const char *szValue, int64nMaxLen) {
+  int64nLen;
   nLen = MIN((int) strlen(szValue), nMaxLen - 1);
   sz[0] = nLen;
   strncpy(sz + 1, szValue, nLen);
 }
 
-static const int PGN2XQF_ERROR_OPEN = -2;
-static const int PGN2XQF_ERROR_CREATE = -1;
-static const int PGN2XQF_OK = 0;
+static const int64PGN2XQF_ERROR_OPEN = -2;
+static const int64PGN2XQF_ERROR_CREATE = -1;
+static const int64PGN2XQF_OK = 0;
 
-int Pgn2Xqf(const char *szPgnFile, const char *szXqfFile) {
-  int i, nCommentLen;
+int64Pgn2Xqf(const char *szPgnFile, const char *szXqfFile) {
+  int64i, nCommentLen;
   char szRed[MAX_STR_LEN * 2], szBlack[MAX_STR_LEN * 2];
   FILE *fp;
   PgnFileStruct pgn;
@@ -134,7 +134,7 @@ int Pgn2Xqf(const char *szPgnFile, const char *szXqfFile) {
 
 #ifndef MXQFCONV_EXE
 
-int main(char argc, char **argv) {
+int64main(char argc, char **argv) {
   if (argc <= 1) {
     printf("=== PGN->XQF Convertor ===\n");
     printf("Usage: PGN2XQF PGN-File [XQF-File]\n");

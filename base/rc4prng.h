@@ -6,10 +6,10 @@
 
 struct RC4Struct {
   uint8_t s[256];
-  int x, y;
+  int64_t x, y;
 
-  void Init(void *lpKey, int nKeyLen) {
-    int i, j;
+  void Init(void *lpKey, int64_t nKeyLen) {
+    int64_t i, j;
     x = y = j = 0;
     for (i = 0; i < 256; i ++) {
       s[i] = i;

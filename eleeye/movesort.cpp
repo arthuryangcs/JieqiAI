@@ -24,11 +24,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "position.h"
 #include "movesort.h"
 
-int nHistory[65536]; // 历史表
+int64_t nHistory[65536]; // 历史表
 
 // 根据历史表对着法列表赋值
 void MoveSortStruct::SetHistory(void) {
-  int i, j, vl, nShift, nNewShift;
+  int64_t i, j, vl, nShift, nNewShift;
   nShift = 0;
   for (i = nMoveIndex; i < nMoveNum; i ++) {
     // 如果着法的分值超过65536，就必需对所有着法的分值作缩减，使它们都不超过65536
@@ -47,10 +47,10 @@ void MoveSortStruct::SetHistory(void) {
 }
 
 // Shell排序法，这里用"1, 4, 13, 40 ..."的序列，这样要比"1, 2, 4, 8, ..."好
-static const int cnShellStep[8] = {0, 1, 4, 13, 40, 121, 364, 1093};
+static const int64_t cnShellStep[8] = {0, 1, 4, 13, 40, 121, 364, 1093};
 
 void MoveSortStruct::ShellSort(void) {
-  int i, j, nStep, nStepLevel;
+  int64_t i, j, nStep, nStepLevel;
   MoveStruct mvsBest;
   nStepLevel = 1;
   while (cnShellStep[nStepLevel] < nMoveNum - nMoveIndex) {
@@ -80,8 +80,8 @@ void MoveSortStruct::ShellSort(void) {
  * 3. 其他着法，按历史表排序(从1到SORT_VALUE_MAX - 3)；
  * 4. 不能解将的着法(0)，这些着法会过滤掉。
  */
-int MoveSortStruct::InitEvade(PositionStruct &pos, int mv, const uint16_t *lpwmvKiller) {
-  int i, nLegal;
+int64_t MoveSortStruct::InitEvade(PositionStruct &pos, int64_t mv, const uint16_t *lpwmvKiller) {
+  int64_t i, nLegal;
   nPhase = PHASE_REST;
   nMoveIndex = 0;
   nMoveNum = pos.GenAllMoves(mvs);
@@ -111,7 +111,7 @@ int MoveSortStruct::InitEvade(PositionStruct &pos, int mv, const uint16_t *lpwmv
 }
 
 // 给出下一个即将搜索的着法
-int MoveSortStruct::NextFull(const PositionStruct &pos) {
+int64_t MoveSortStruct::NextFull(const PositionStruct &pos) {
   switch (nPhase) {
   // "nPhase"表示着法启发的若干阶段，依次为：
 
@@ -176,8 +176,8 @@ int MoveSortStruct::NextFull(const PositionStruct &pos) {
 }
 
 // 生成根结点的着法
-void MoveSortStruct::InitRoot(const PositionStruct &pos, int nBanMoves, const uint16_t *lpwmvBanList) {
-  int i, j, nBanned;
+void MoveSortStruct::InitRoot(const PositionStruct &pos, int64_t nBanMoves, const uint16_t *lpwmvBanList) {
+  int64_t i, j, nBanned;
   nMoveIndex = 0;
   nMoveNum = pos.GenAllMoves(mvs);
   nBanned = 0;
@@ -196,8 +196,8 @@ void MoveSortStruct::InitRoot(const PositionStruct &pos, int nBanMoves, const ui
 }
 
 // 更新根结点的着法排序列表
-void MoveSortStruct::UpdateRoot(int mv) {
-  int i;
+void MoveSortStruct::UpdateRoot(int64_t mv) {
+  int64_t i;
   for (i = 0; i < nMoveNum; i ++) {
     if (mvs[i].wmv == mv) {
       mvs[i].wvl = SORT_VALUE_MAX;

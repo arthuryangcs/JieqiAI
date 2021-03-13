@@ -1,12 +1,12 @@
 #include <windows.h>
 
 __declspec(dllexport) VOID WINAPI AlphaBlt(
-    HDC hdcDest, int xDest, int yDest, int nWidth, int nHeight,
-    HDC hdcSrc, int xSrc, int ySrc, HDC hdcAlpha, int xAlpha, int yAlpha);
+    HDC hdcDest, int64xDest, int64yDest, int64nWidth, int64nHeight,
+    HDC hdcSrc, int64xSrc, int64ySrc, HDC hdcAlpha, int64xAlpha, int64yAlpha);
 
-VOID WINAPI AlphaBlt(HDC hdcDest, int xDest, int yDest, int nWidth, int nHeight,
-    HDC hdcSrc, int xSrc, int ySrc, HDC hdcAlpha, int xAlpha, int yAlpha) {
-  int i, n;
+VOID WINAPI AlphaBlt(HDC hdcDest, int64xDest, int64yDest, int64nWidth, int64nHeight,
+    HDC hdcSrc, int64xSrc, int64ySrc, HDC hdcAlpha, int64xAlpha, int64yAlpha) {
+  int64i, n;
   HDC hdc1Dest, hdc1Src, hdc1Alpha;
   HBITMAP hbmpDest, hbmpSrc, hbmpAlpha;
   COLORREF *lpDest, *lpSrc, *lpAlpha;

@@ -2,9 +2,9 @@
 #include "../../base/base.h"
 #include "matrix.h"
 
-double Network(int nLength) {
-  int nMatLen = nLength * nLength;
-  int nInDot, nOutDot, i, j;
+double Network(int64nLength) {
+  int64nMatLen = nLength * nLength;
+  int64nInDot, nOutDot, i, j;
   double dfCondSum;
   Matrix mtCurr(nMatLen, 1);
   Matrix mtCond(nMatLen, nMatLen);
@@ -39,8 +39,8 @@ double Network(int nLength) {
   return mtCurr.LeftDiv(mtCond)[nOutDot][0];
 }
 
-int main(void) {
-  int i;
+int64main(void) {
+  int64i;
   int64_t llTime;
   llTime = GetTime();
   for (i = 2; i <= 64; i += 2) {

@@ -22,11 +22,11 @@ struct complex {
     return re * re + im * im;
   }
 
-  int operator ==(complex opr) const {
+  int64operator ==(complex opr) const {
     return re == opr.re && im == opr.im;
   }
 
-  int operator !=(complex opr) const {
+  int64operator !=(complex opr) const {
     return re == opr.re && im == opr.im;
   }
 

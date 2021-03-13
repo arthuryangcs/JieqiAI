@@ -34,13 +34,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "movesort.h"
 #include "search.h"
 
-const int IID_DEPTH = 2;         // 内部迭代加深的深度
-const int SMP_DEPTH = 6;         // 并行搜索的深度
-const int UNCHANGED_DEPTH = 4;   // 未改变最佳着法的深度
+const int64_t IID_DEPTH = 2;         // 内部迭代加深的深度
+const int64_t SMP_DEPTH = 6;         // 并行搜索的深度
+const int64_t UNCHANGED_DEPTH = 4;   // 未改变最佳着法的深度
 
-const int DROPDOWN_VALUE = 20;   // 落后的分值
-const int RESIGN_VALUE = 300;    // 认输的分值
-const int DRAW_OFFER_VALUE = 40; // 提和的分值
+const int64_t DROPDOWN_VALUE = 20;   // 落后的分值
+const int64_t RESIGN_VALUE = 300;    // 认输的分值
+const int64_t DRAW_OFFER_VALUE = 40; // 提和的分值
 
 SearchStruct Search;
 
@@ -49,9 +49,9 @@ static struct {
   int64_t llTime;                     // 计时器
   bool bStop, bPonderStop;            // 中止信号和后台思考认为的中止信号
   bool bPopPv, bPopCurrMove;          // 是否输出pv和currmove
-  int nPopDepth, vlPopValue;          // 输出的深度和分值
-  int nAllNodes, nMainNodes;          // 总结点数和主搜索树的结点数
-  int nUnchanged;                     // 未改变最佳着法的深度
+  int64_t nPopDepth, vlPopValue;          // 输出的深度和分值
+  int64_t nAllNodes, nMainNodes;          // 总结点数和主搜索树的结点数
+  int64_t nUnchanged;                     // 未改变最佳着法的深度
   uint16_t wmvPvLine[MAX_MOVE_NUM];   // 主要变例路线上的着法列表
   uint16_t wmvKiller[LIMIT_DEPTH][2]; // 杀手着法表
   MoveSortStruct MoveSort;            // 根结点的着法序列
@@ -60,14 +60,14 @@ static struct {
 #ifndef CCHESS_A3800
 
 void BuildPos(PositionStruct &pos, const UcciCommStruct &UcciComm) {
-  int i, mv;
+  int64_t i, mv;
   pos.FromFen(UcciComm.szFenStr);
   for (i = 0; i < UcciComm.nMoveNum; i ++) {
     mv = COORD_MOVE(UcciComm.lpdwMovesCoord[i]);
     if (mv == 0) {
       break;
     }
-    if (pos.LegalMove(mv) && pos.MakeMove(mv) && pos.LastMove().CptDrw > 0) {
+    if (pos.LegalMove(mv) && pos.MakeMove(mv) && pos.LastMove().Drw > 0) {
       // 始终让pos.nMoveNum反映没吃子的步数
       pos.SetIrrev();
     }
@@ -149,7 +149,7 @@ static bool Interrupt(void) {
 #ifndef CCHESS_A3800
 
 // 输出主要变例
-static void PopPvLine(int nDepth = 0, int vl = 0) {
+static void PopPvLine(int64_t nDepth = 0, int64_t vl = 0) {
   uint16_t *lpwmv;
   uint32_t dwMoveStr;
   // 如果尚未达到需要输出的深度，那么记录该深度和分值，以后再输出
@@ -159,7 +159,7 @@ static void PopPvLine(int nDepth = 0, int vl = 0) {
     return;
   }
   // 输出时间和搜索结点数
-  printf("info time %d nodes %d\n", (int) (GetTime() - Search2.llTime), Search2.nAllNodes);
+  printf("info time %d nodes %lld\n", (int) (GetTime() - Search2.llTime), Search2.nAllNodes);
   fflush(stdout);
   if (nDepth == 0) {
     // 如果是搜索结束后的输出，并且已经输出过，那么不必再输出
@@ -173,7 +173,7 @@ static void PopPvLine(int nDepth = 0, int vl = 0) {
     // 达到需要输出的深度，那么以后不必再输出
     Search2.nPopDepth = Search2.vlPopValue = 0;
   }
-  printf("info depth %d score %d pv", nDepth, vl);
+  printf("info depth %lld score %lld pv", nDepth, vl);
   lpwmv = Search2.wmvPvLine;
   while (*lpwmv != 0) {
     dwMoveStr = MOVE_COORD(*lpwmv);
@@ -187,8 +187,8 @@ static void PopPvLine(int nDepth = 0, int vl = 0) {
 #endif
 
 // 无害裁剪
-static int HarmlessPruning(const PositionStruct &pos, int vlBeta) {
-  int vl, vlRep;
+static int64_t HarmlessPruning(const PositionStruct &pos, int64_t vlBeta) {
+  int64_t vl, vlRep;
 
   // 1. 杀棋步数裁剪；
   vl = pos.nDistance - MATE_VALUE;
@@ -211,15 +211,15 @@ static int HarmlessPruning(const PositionStruct &pos, int vlBeta) {
 }
 
 // 调整型局面评价函数
-inline int Evaluate(const PositionStruct &pos, int vlAlpha, int vlBeta) {
-  int vl;
+inline int64_t Evaluate(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta) {
+  int64_t vl;
   vl = Search.bKnowledge ? pos.Evaluate(vlAlpha, vlBeta) : pos.Material();
   return vl == pos.DrawValue() ? vl - 1 : vl;
 }
 
 // 静态搜索例程
-static int SearchQuiesc(PositionStruct &pos, int vlAlpha, int vlBeta) {
-  int vlBest, vl, mv;
+static int64_t SearchQuiesc(PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta) {
+  int64_t vlBest, vl, mv;
   bool bInCheck;
   MoveSortStruct MoveSort;  
   // 静态搜索例程包括以下几个步骤：
@@ -273,7 +273,7 @@ static int SearchQuiesc(PositionStruct &pos, int vlAlpha, int vlBeta) {
 
   // 9. 用Alpha-Beta算法搜索这些着法；
   while ((mv = MoveSort.NextQuiesc(bInCheck)) != 0) {
-    __ASSERT(bInCheck || pos.ucpcSquares[DST(mv)] > 0);
+    __ASSERT(bInCheck || pos.ucpcSquares[DST(mv)] > NO_PIECE);
     if (pos.MakeMove(mv)) {
       vl = -SearchQuiesc(pos, -vlBeta, -vlAlpha);
       pos.UndoMakeMove();
@@ -310,10 +310,10 @@ static int SearchQuiesc(PositionStruct &pos, int vlAlpha, int vlBeta) {
 
 // UCCI支持 - 输出叶子结点的局面信息
 void PopLeaf(PositionStruct &pos) {
-  int vl;
+  int64_t vl;
   Search2.nAllNodes = 0;
   vl = SearchQuiesc(pos, -MATE_VALUE, MATE_VALUE);
-  printf("pophash lowerbound %d depth 0 upperbound %d depth 0\n", vl, vl);
+  printf("pophash lowerbound %lld depth 0 upperbound %lld depth 0\n", vl, vl);
   fflush(stdout);
 }
 
@@ -322,9 +322,9 @@ void PopLeaf(PositionStruct &pos) {
 const bool NO_NULL = true; // "SearchCut()"的参数，是否禁止空着裁剪
 
 // 零窗口完全搜索例程
-static int SearchCut(int vlBeta, int nDepth, bool bNoNull = false) {
-  int nNewDepth, vlBest, vl;
-  int mvHash, mv, mvEvade;
+static int64_t SearchCut(int64_t vlBeta, int64_t nDepth, bool bNoNull = false) {
+  int64_t nNewDepth, vlBest, vl;
+  int64_t mvHash, mv, mvEvade;
   MoveSortStruct MoveSort;
   // 完全搜索例程包括以下几个步骤：
 
@@ -450,9 +450,9 @@ static void AppendPvLine(uint16_t *lpwmvDst, uint16_t mv, const uint16_t *lpwmvS
  * 4. PV结点要获取主要变例；
  * 5. 考虑PV结点处理最佳着法的情况。
  */
-static int SearchPV(int vlAlpha, int vlBeta, int nDepth, uint16_t *lpwmvPvLine) {
-  int nNewDepth, nHashFlag, vlBest, vl;
-  int mvBest, mvHash, mv, mvEvade;
+static int64_t SearchPV(int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, uint16_t *lpwmvPvLine) {
+  int64_t nNewDepth, nHashFlag, vlBest, vl;
+  int64_t mvBest, mvHash, mv, mvEvade;
   MoveSortStruct MoveSort;
   uint16_t wmvPvLine[LIMIT_DEPTH];
   // 完全搜索例程包括以下几个步骤：
@@ -578,8 +578,8 @@ static int SearchPV(int vlAlpha, int vlBeta, int nDepth, uint16_t *lpwmvPvLine) 
  * 5. 搜索到最佳着法时要做很多处理(包括记录主要变例、结点排序等)；
  * 6. 不更新历史表和杀手着法表。
  */
-static int SearchRoot(int nDepth) {
-  int nNewDepth, vlBest, vl, mv, nCurrMove;
+static int64_t SearchRoot(int64_t nDepth) {
+  int64_t nNewDepth, vlBest, vl, mv, nCurrMove;
 #ifndef CCHESS_A3800
   uint32_t dwMoveStr;
 #endif
@@ -652,8 +652,8 @@ static int SearchRoot(int nDepth) {
 // 唯一着法检验是ElephantEye在搜索上的一大特色，用来判断用以某种深度进行的搜索是否找到了唯一着法。
 // 其原理是把找到的最佳着法设成禁止着法，然后以(-WIN_VALUE, 1 - WIN_VALUE)的窗口重新搜索，
 // 如果低出边界则说明其他着法都将被杀。
-static bool SearchUnique(int vlBeta, int nDepth) {
-  int vl, mv;
+static bool SearchUnique(int64_t vlBeta, int64_t nDepth) {
+  int64_t vl, mv;
   Search2.MoveSort.ResetRoot(ROOT_UNIQUE);
   // 跳过第一个着法
   while ((mv = Search2.MoveSort.NextRoot()) != 0) {
@@ -669,12 +669,12 @@ static bool SearchUnique(int vlBeta, int nDepth) {
 }
 
 // 主搜索例程
-void SearchMain(int nDepth) {
-  int i, vl, vlLast, nDraw;
-  int nCurrTimer, nLimitTimer, nLimitNodes;
+void SearchMain(int64_t nDepth) {
+  int64_t i, vl, vlLast, nDraw;
+  int64_t nCurrTimer, nLimitTimer, nLimitNodes;
   bool bUnique;
 #ifndef CCHESS_A3800
-  int nBookMoves;
+  int64_t nBookMoves;
   uint32_t dwMoveStr;
   BookStruct bks[MAX_GEN_MOVES];
 #endif
@@ -736,7 +736,7 @@ void SearchMain(int nDepth) {
   // 3. 如果深度为零则返回静态搜索值
   if (nDepth == 0) {
 #ifndef CCHESS_A3800
-    printf("info depth 0 score %d\n", SearchQuiesc(Search.pos, -MATE_VALUE, MATE_VALUE));
+    printf("info depth 0 score %lld\n", SearchQuiesc(Search.pos, -MATE_VALUE, MATE_VALUE));
     fflush(stdout);
     printf("nobestmove, 如果深度为零则返回静态搜索值\n");
     fflush(stdout);
@@ -759,7 +759,7 @@ void SearchMain(int nDepth) {
   Search2.llTime = GetTime();
   vlLast = 0;
   // 如果走了10回合无用着法，那么允许主动提和，以后每隔8回合提和一次
-  nDraw = -Search.pos.LastMove().CptDrw;
+  nDraw = -Search.pos.LastMove().Drw;
   if (nDraw > 5 && ((nDraw - 4) / 2) % 8 == 0) {
     Search.bDraw = true;
   }

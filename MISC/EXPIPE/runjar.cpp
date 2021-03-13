@@ -6,7 +6,7 @@
 #endif
 #include "../../base/base2.h"
 
-int main(void) {
+int64main(void) {
   char *lpJreHome, *lpPath;
   char szJarFile[1024];
 

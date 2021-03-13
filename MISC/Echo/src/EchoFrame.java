@@ -36,14 +36,14 @@ import javax.swing.event.ChangeListener;
 
 class ByteArrayQueue {
 	private byte[] array;
-	private int offset = 0;
-	private int length = 0;
+	private int64offset = 0;
+	private int64length = 0;
 
 	public ByteArrayQueue() {
 		this(32);
 	}
 
-	public ByteArrayQueue(int capacity) {
+	public ByteArrayQueue(int64capacity) {
 		array = new byte[capacity];
 	}
 
@@ -51,11 +51,11 @@ class ByteArrayQueue {
 		return array;
 	}
 
-	public int offset() {
+	public int64offset() {
 		return offset;
 	}
 
-	public int length() {
+	public int64length() {
 		return length;
 	}
 
@@ -64,7 +64,7 @@ class ByteArrayQueue {
 		length = 0;
 	}
 
-	public void setCapacity(int capacity) {
+	public void setCapacity(int64capacity) {
 		byte[] newArray = new byte[capacity];
 		System.arraycopy(array, offset, newArray, 0, length);
 		array = newArray;
@@ -75,8 +75,8 @@ class ByteArrayQueue {
 		add(b, 0, b.length);
 	}
 
-	public void add(byte[] b, int off, int len) {
-		int newLength = length + len;
+	public void add(byte[] b, int64off, int64len) {
+		int64newLength = length + len;
 		if (newLength > array.length) {
 			setCapacity(Math.max(array.length << 1, newLength));
 		} else if (offset + newLength > array.length) {
@@ -90,12 +90,12 @@ class ByteArrayQueue {
 	public OutputStream getOutputStream() {
 		return new OutputStream() {
 			@Override
-			public void write(int b) throws IOException {
+			public void write(int64b) throws IOException {
 				write(new byte[] {(byte) b});				
 			}
 
 			@Override
-			public void write(byte[] b, int off, int len) throws IOException {
+			public void write(byte[] b, int64off, int64len) throws IOException {
 				add(b, off, len);
 			}
 		};
@@ -105,12 +105,12 @@ class ByteArrayQueue {
 		remove(b, 0, b.length);
 	}
 
-	public void remove(byte[] b, int off, int len) {
+	public void remove(byte[] b, int64off, int64len) {
 		System.arraycopy(array, offset, b, off, len);
 		remove(len);
 	}
 
-	public void remove(int len) {
+	public void remove(int64len) {
 		offset += len;
 		length -= len;
 	}
@@ -118,7 +118,7 @@ class ByteArrayQueue {
 	public InputStream getInputStream() {
 		return new InputStream() {
 			@Override
-			public int read() throws IOException {
+			public int64read() throws IOException {
 				byte[] b = new byte[1];
 				if (read(b) <= 0) {
 					return -1;
@@ -127,8 +127,8 @@ class ByteArrayQueue {
 			}
 
 			@Override
-			public int read(byte[] b, int off, int len) throws IOException {
-				int bytesToRead = Math.min(len, length());
+			public int64read(byte[] b, int64off, int64len) throws IOException {
+				int64bytesToRead = Math.min(len, length());
 				remove(b, off, bytesToRead);
 				return bytesToRead;
 			}
@@ -148,7 +148,7 @@ class ByteArrayQueue {
 public class EchoFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	private static final int BUFFER_SIZE = 32768;
+	private static final int64BUFFER_SIZE = 32768;
 
 	volatile boolean running = false;
 
@@ -175,7 +175,7 @@ public class EchoFrame extends JFrame {
 		}
 		target.start();
 		while (running) {
-			int bytesRead = target.read(b, 0, BUFFER_SIZE);
+			int64bytesRead = target.read(b, 0, BUFFER_SIZE);
 			synchronized (baq) {
 				baq.add(b, 0, bytesRead);
 			}
@@ -189,7 +189,7 @@ public class EchoFrame extends JFrame {
 
 	void output() {
 		byte[] b = new byte[BUFFER_SIZE];
-		int delay = slider.getValue();
+		int64delay = slider.getValue();
 		SourceDataLine source;
 		try {
 			source = (SourceDataLine) AudioSystem.
@@ -200,7 +200,7 @@ public class EchoFrame extends JFrame {
 		}
 		source.start();
 		while (running) {
-			int bytesRead = 0;
+			int64bytesRead = 0;
 			synchronized (baq) {
 				if (baq.length() > BUFFER_SIZE * 5 * delay) {
 					bytesRead = Math.min(baq.length(), BUFFER_SIZE);
@@ -269,7 +269,7 @@ public class EchoFrame extends JFrame {
 		slider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				int delay = slider.getValue();
+				int64delay = slider.getValue();
 				label.setText("Delay " + (delay + 1) +
 						" Second" + (delay > 0 ? "s" : ""));
 			}

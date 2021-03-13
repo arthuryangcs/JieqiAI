@@ -26,16 +26,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef PREGEN_H
 #define PREGEN_H
 
-#define __ASSERT_PIECE(pc) __ASSERT((pc) >= 16 && (pc) <= 47)
+#define __ASSERT_PIECE(pc) __ASSERT((pc) >= 0 && (pc) <= 63)
 #define __ASSERT_SQUARE(sq) __ASSERT(IN_BOARD(sq))
 #define __ASSERT_BITRANK(w) __ASSERT((w) < (1 << 9))
 #define __ASSERT_BITFILE(w) __ASSERT((w) < (1 << 10))
 
-const int RANK_TOP = 3;
-const int RANK_BOTTOM = 12;
-const int FILE_LEFT = 3;
-const int FILE_CENTER = 7;
-const int FILE_RIGHT = 11;
+const int64_t RANK_TOP = 3;
+const int64_t RANK_BOTTOM = 12;
+const int64_t FILE_LEFT = 3;
+const int64_t FILE_CENTER = 7;
+const int64_t FILE_RIGHT = 11;
 
 extern const bool cbcInBoard[256];    // 棋盘区域表
 extern const bool cbcInFort[256];     // 城池区域表
@@ -43,112 +43,119 @@ extern const bool cbcCanPromote[256]; // 升变区域表
 extern const int8_t ccLegalSpanTab[512];   // 合理着法跨度表
 extern const int8_t ccKnightPinTab[512];   // 马腿表
 
-inline bool IN_BOARD(int sq) {
+inline bool IN_BOARD(int64_t sq) {
   return cbcInBoard[sq];
 }
 
-inline bool IN_FORT(int sq) {
+inline bool IN_FORT(int64_t sq) {
   return cbcInFort[sq];
 }
 
-inline bool CAN_PROMOTE(int sq) {
+inline bool CAN_PROMOTE(int64_t sq) {
   return cbcCanPromote[sq];
 }
 
-inline int8_t LEGAL_SPAN_TAB(int nDisp) {
+inline int8_t LEGAL_SPAN_TAB(int64_t nDisp) {
   return ccLegalSpanTab[nDisp];
 }
 
-inline int8_t KNIGHT_PIN_TAB(int nDisp) {
+inline int8_t KNIGHT_PIN_TAB(int64_t nDisp) {
   return ccKnightPinTab[nDisp];
 }
 
-inline int RANK_Y(int sq) {
+inline int64_t RANK_Y(int64_t sq) {
   return sq >> 4;
 }
 
-inline int FILE_X(int sq) {
+inline int64_t FILE_X(int64_t sq) {
   return sq & 15;
 }
 
-inline int COORD_XY(int x, int y) {
+inline int64_t COORD_XY(int64_t x, int64_t y) {
   return x + (y << 4);
 }
 
-inline int SQUARE_FLIP(int sq) {
+inline int64_t SQUARE_FLIP(int64_t sq) {
   return 254 - sq;
 }
 
-inline int FILE_FLIP(int x) {
+inline int64_t FILE_FLIP(int64_t x) {
   return 14 - x;
 }
 
-inline int RANK_FLIP(int y) {
+inline int64_t RANK_FLIP(int64_t y) {
   return 15 - y;
 }
 
-inline int OPP_SIDE(int sd) {
+inline int64_t OPP_SIDE(int64_t sd) {
   return 1 - sd;
 }
 
-inline int SQUARE_FORWARD(int sq, int sd) {
+inline int64_t SQUARE_FORWARD(int64_t sq, int64_t sd) {
   return sq - 16 + (sd << 5);
 }
 
-inline int SQUARE_BACKWARD(int sq, int sd) {
+inline int64_t SQUARE_BACKWARD(int64_t sq, int64_t sd) {
   return sq + 16 - (sd << 5);
 }
 
-inline bool KING_SPAN(int sqSrc, int sqDst) {
+inline bool KING_SPAN(int64_t sqSrc, int64_t sqDst) {
   return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 1;
 }
 
-inline bool ADVISOR_SPAN(int sqSrc, int sqDst) {
+inline bool ADVISOR_SPAN(int64_t sqSrc, int64_t sqDst) {
   return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 2;
 }
 
-inline bool BISHOP_SPAN(int sqSrc, int sqDst) {
+inline bool BISHOP_SPAN(int64_t sqSrc, int64_t sqDst) {
   return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 3;
 }
 
-inline int BISHOP_PIN(int sqSrc, int sqDst) {
+inline int64_t BISHOP_PIN(int64_t sqSrc, int64_t sqDst) {
   return (sqSrc + sqDst) >> 1;
 }
 
-inline int KNIGHT_PIN(int sqSrc, int sqDst) {
+inline int64_t KNIGHT_PIN(int64_t sqSrc, int64_t sqDst) {
   return sqSrc + KNIGHT_PIN_TAB(sqDst - sqSrc + 256);
 }
 
-inline bool WHITE_HALF(int sq) {
+inline bool WHITE_HALF(int64_t sq) {
   return (sq & 0x80) != 0;
 }
 
-inline bool BLACK_HALF(int sq) {
+inline bool BLACK_HALF(int64_t sq) {
   return (sq & 0x80) == 0;
 }
 
-inline bool HOME_HALF(int sq, int sd) {
+inline bool HOME_HALF(int64_t sq, int64_t sd) {
   return (sq & 0x80) != (sd << 7);
 }
 
-inline bool AWAY_HALF(int sq, int sd) {
+inline bool AWAY_HALF(int64_t sq, int64_t sd) {
   return (sq & 0x80) == (sd << 7);
 }
 
-inline bool SAME_HALF(int sqSrc, int sqDst) {
+inline bool SAME_HALF(int64_t sqSrc, int64_t sqDst) {
   return ((sqSrc ^ sqDst) & 0x80) == 0;
 }
 
-inline bool DIFF_HALF(int sqSrc, int sqDst) {
+inline bool DIFF_HALF(int64_t sqSrc, int64_t sqDst) {
   return ((sqSrc ^ sqDst) & 0x80) != 0;
 }
 
-inline int RANK_DISP(int y) {
+inline int64_t RANK_DISP(int64_t y) {
   return y << 4;
 }
 
-inline int FILE_DISP(int x) {
+inline int64_t FILE_DISP(int64_t x) {
   return x;
+}
+
+inline bool IS_SAME_SIDE(int64_t pcMoved, int64_t nSideTag) {
+    if (pcMoved == -1) {
+      return false;
+    }
+    return (pcMoved >= 32 && nSideTag == 32) || (pcMoved < 32 && nSideTag == 0);
 }
 
 // 借助“位行”和“位列”生成车炮着法的预置结构
@@ -189,7 +196,7 @@ struct ZobristStruct {
 extern struct PreGenStruct {
   // Zobrist键值表，分Zobrist键值和Zobrist校验锁两部分
   ZobristStruct zobrPlayer;
-  ZobristStruct zobrTable[14][256];
+  ZobristStruct zobrTable[16][256];
 
   uint16_t wBitRankMask[256]; // 每个格子的位行的屏蔽位
   uint16_t wBitFileMask[256]; // 每个格子的位列的屏蔽位
@@ -229,9 +236,9 @@ extern struct PreGenStruct {
 // 局面预评价结构
 extern struct PreEvalStruct {
   bool bPromotion;
-  int vlAdvanced;
-  uint8_t ucvlWhitePieces[7][256];
-  uint8_t ucvlBlackPieces[7][256];
+  int64_t vlAdvanced;
+  uint8_t ucvlWhitePieces[8][256];
+  uint8_t ucvlBlackPieces[8][256];
 } PreEval;
 
 void PreGenInit(void);

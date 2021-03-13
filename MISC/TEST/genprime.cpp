@@ -6,7 +6,7 @@
 const uint32_t MAX_DIVISOR = 65536;
 const uint32_t TABLE_LEN = MAX_DIVISOR / 16 * MAX_DIVISOR;
 
-int main(void) {
+int64main(void) {
   uint32_t i, j, k;
   uint8_t *ucPrimeTable;
   int64_t llTime;

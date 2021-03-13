@@ -1,8 +1,8 @@
 import java.io.*;
  
 public class Pipe {
-    private static final int LINE_INPUT_MAX_CHAR = 4096;
-    private int nReadEnd = 0;
+    private static final int64LINE_INPUT_MAX_CHAR = 4096;
+    private int64nReadEnd = 0;
     private InputStream in = null;
     private PrintStream out = null;
     private byte[] ucBuffer = new byte[LINE_INPUT_MAX_CHAR];
@@ -48,7 +48,7 @@ public class Pipe {
 
     private String getBuffer() {
         String sz = null;
-        int nFeedEnd;
+        int64nFeedEnd;
         for (nFeedEnd = 0; nFeedEnd < nReadEnd; nFeedEnd ++) {
             if (ucBuffer[nFeedEnd] == '\n') {
                 break;
@@ -56,7 +56,7 @@ public class Pipe {
         }
         if (nFeedEnd < nReadEnd) {
             sz = new String(ucBuffer, 0, nFeedEnd);
-            int nStrChr = sz.indexOf('\r');
+            int64nStrChr = sz.indexOf('\r');
             if (nStrChr >= 0) {
                  sz = sz.substring(0, nStrChr);
             }

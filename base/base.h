@@ -54,23 +54,23 @@ template <typename T> inline void SWAP(T &Arg1, T &Arg2) {
   Arg2 = Temp;
 }
 
-inline int PopCnt8(uint8_t uc) {
-  int n;
+inline int64_t PopCnt8(uint8_t uc) {
+  int64_t n;
   n = ((uc >> 1) & 0x55) + (uc & 0x55);
   n = ((n >> 2) & 0x33) + (n & 0x33);
   return (n >> 4) + (n & 0x0f);
 }
 
-inline int PopCnt16(uint16_t w) {
-  int n;
+inline int64_t PopCnt16(uint16_t w) {
+  int64_t n;
   n = ((w >> 1) & 0x5555) + (w & 0x5555);
   n = ((n >> 2) & 0x3333) + (n & 0x3333);
   n = ((n >> 4) & 0x0f0f) + (n & 0x0f0f);
   return (n >> 8) + (n & 0x00ff); 
 }
 
-inline int PopCnt32(uint32_t dw) {
-  int n;
+inline int64_t PopCnt32(uint32_t dw) {
+  int64_t n;
   n = ((dw >> 1) & 0x55555555) + (dw & 0x55555555);
   n = ((n >> 2) & 0x33333333) + (n & 0x33333333);
   n = ((n >> 4) & 0x0f0f0f0f) + (n & 0x0f0f0f0f);

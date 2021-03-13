@@ -12,12 +12,12 @@ struct PipeStruct {
 #ifdef _WIN32
   HANDLE hInput, hOutput;
   BOOL bConsole;
-  int nBytesLeft;
+  int64nBytesLeft;
 #else
-  int nInput, nOutput;
+  int64_t nInput, nOutput;
 #endif
-  int nEof;
-  int nReadEnd;
+  int64_t nEof;
+  int64_t nReadEnd;
   char szBuffer[LINE_INPUT_MAX_CHAR];
 
   void Open(const char *szExecFile = NULL);

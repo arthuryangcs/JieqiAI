@@ -35,7 +35,7 @@ extern "C" __declspec(dllexport) BOOL WINAPI PutBookMove(LPCSTR szFile, const Bo
 
 struct TempStruct {
   uint32_t dwZobristLock0, dwZobristLock1;
-  int mv, vl;
+  int64mv, vl;
   TempStruct() {
   }
   TempStruct(const TempStruct &tmp) {
@@ -44,7 +44,7 @@ struct TempStruct {
     mv = tmp.mv;
     vl = tmp.vl;
   }
-  TempStruct(const PositionStruct &pos, int mvArg, int vlArg) {
+  TempStruct(const PositionStruct &pos, int64mvArg, int64vlArg) {
     dwZobristLock0 = pos.zobr.dwLock0;
     dwZobristLock1 = pos.zobr.dwLock1;
     mv = mvArg;
@@ -60,28 +60,28 @@ struct TempStruct {
 
 static struct {
   FILE *fpBookFile, *fpTempFile;
-  int nTempLen;
-  int nWin, nDraw, nLoss, nRatio;
+  int64nTempLen;
+  int64nWin, nDraw, nLoss, nRatio;
   TempStruct *TempBuffer;
 } MakeBook2;
 
-inline void ReadTemp(int nPtr, TempStruct *lptmp, int nLen) {
+inline void ReadTemp(int64nPtr, TempStruct *lptmp, int64nLen) {
   fseek(MakeBook2.fpTempFile, nPtr * sizeof(TempStruct), SEEK_SET);
   fread(lptmp, sizeof(TempStruct), nLen, MakeBook2.fpTempFile);
 }
 
-inline void WriteTemp(int nPtr, const TempStruct *lptmp, int nLen) {
+inline void WriteTemp(int64nPtr, const TempStruct *lptmp, int64nLen) {
   fseek(MakeBook2.fpTempFile, nPtr * sizeof(TempStruct), SEEK_SET);
   fwrite(lptmp, sizeof(TempStruct), nLen, MakeBook2.fpTempFile);
 }
 
-inline TempStruct GetTemp(int nPtr) {
+inline TempStruct GetTemp(int64nPtr) {
   TempStruct tmp;
   ReadTemp(nPtr, &tmp, 1);
   return tmp;
 }
 
-inline void SetTemp(int nPtr, const TempStruct &tmp) {
+inline void SetTemp(int64nPtr, const TempStruct &tmp) {
   WriteTemp(nPtr, &tmp, 1);
 }
 
@@ -90,7 +90,7 @@ inline void AddTemp(const TempStruct &tmp) {
   MakeBook2.nTempLen ++;
 }
 
-inline int MoveValue(int sd, int nResult) {
+inline int64MoveValue(int64sd, int64nResult) {
   switch (nResult) {
   case 1:
     return sd == 0 ? MakeBook2.nWin : MakeBook2.nLoss;
@@ -104,7 +104,7 @@ inline int MoveValue(int sd, int nResult) {
 }
 
 static void ParseFile(const char *szFilePath) {
-  int i, mv, mvMirror, nComp;
+  int64i, mv, mvMirror, nComp;
   PositionStruct pos, posMirror;
   PgnFileStruct pgn;
 
@@ -190,11 +190,11 @@ static void SearchFolder(const char *szFolderPath) {
   FindClose(hFind);
 }
 
-static const int TEMP_BUFFER_SIZE = 1048576;
+static const int64TEMP_BUFFER_SIZE = 1048576;
 
-static void SortMem(int low, int high) {
+static void SortMem(int64low, int64high) {
   TempStruct tmpMid, tmpSwap;
-  int lowMid, highMid;
+  int64lowMid, highMid;
 
   lowMid = low;
   highMid = high;
@@ -221,9 +221,9 @@ static void SortMem(int low, int high) {
   }
 }
 
-static void SortTemp(int low, int high) {
+static void SortTemp(int64low, int64high) {
   TempStruct tmpMid, tmpSwap;
-  int lowMid, highMid, nLen;
+  int64lowMid, highMid, nLen;
 
   nLen = high - low + 1;
   if (nLen > TEMP_BUFFER_SIZE) {
@@ -263,7 +263,7 @@ static void SortTemp(int low, int high) {
 }
 
 static void MakeBook() {
-  int i;
+  int64i;
   TempStruct tmpLast, tmp;
   BookStruct bk;
 
@@ -339,7 +339,7 @@ LONG WINAPI GetBookMoves(const PositionStruct *lppos,
 BOOL WINAPI PutBookMove(LPCSTR szFile, const BookStruct *lpcbk) {
   BookFileStruct BookFile;
   BookStruct bk;
-  int nPtr;
+  int64nPtr;
 
   Init();
   nPtr = lpcbk->nPtr;

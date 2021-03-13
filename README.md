@@ -92,7 +92,7 @@ a XiangQi (Chinese Chess) Engine for XQWizard with Strong AI
 　　ElephantEye 的局面评价API函数接口定义如下：<br>
 　　　　A. 局面评价引擎名称：const char \*GetEngineName(void);<br>
 　　　　B. 局面预评价函数接口：void PreEvaluate(PositionStruct \*lppos, PreEvalStruct \*lpPreEval);<br>
-　　　　C. 局面评价函数接口：int Evaluate(const PositionStruct \*lppos, int vlAlpha, int vlBeta);<br>
+　　　　C. 局面评价函数接口：int64Evaluate(const PositionStruct \*lppos, int64vlAlpha, int64vlBeta);<br>
 　　其中 PositionStruct 和 PreEvalStruct 必须分别符合 position.h 和 pregen.h 中定义的结构。　　　　
 
 八、源程序

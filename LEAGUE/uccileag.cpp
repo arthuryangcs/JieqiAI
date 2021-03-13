@@ -39,23 +39,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../cchess/ecco.h"
 #include "../cchess/pgnfile.h"
 
-const int MAX_CHAR = LINE_INPUT_MAX_CHAR; // 输入报告的最大行长度，同时也是引擎发送和接收信息的最大行长度
-const int MAX_ROBIN = 36;                 // 最多的循环
-const int MAX_TEAM = 32;                  // 最多的参赛队数
-const int MAX_PROCESSORS = 32;            // 最多的处理器数
-const int QUEUE_LEN = 64;                 // 处理器队列长度(最好是处理器数的两倍)
+const int64MAX_CHAR = LINE_INPUT_MAX_CHAR; // 输入报告的最大行长度，同时也是引擎发送和接收信息的最大行长度
+const int64MAX_ROBIN = 36;                 // 最多的循环
+const int64MAX_TEAM = 32;                  // 最多的参赛队数
+const int64MAX_PROCESSORS = 32;            // 最多的处理器数
+const int64QUEUE_LEN = 64;                 // 处理器队列长度(最好是处理器数的两倍)
 
 const char *const cszRobinChar = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 // 进程文件的记录结构
 struct CheckStruct {
-  int mv, nTimer;
+  int64mv, nTimer;
 }; // chk
 
 // 进程文件的控制结构
 struct CheckFileStruct {
   FILE *fp;
-  int nLen, nPtr;
+  int64nLen, nPtr;
   bool Eof(void) {                    // 判断进程文件是否读完
     return nPtr == nLen;
   }
@@ -105,10 +105,10 @@ void CheckFileStruct::Open(const char *szFileName) {
 // 参赛队结构
 struct TeamStruct {
   uint32_t dwAbbr;
-  int nEloValue, nKValue;
+  int64nEloValue, nKValue;
   char szEngineName[MAX_CHAR], szEngineFile[MAX_CHAR];
   char szOptionFile[MAX_CHAR], szUrl[MAX_CHAR], szGoParam[MAX_CHAR];
-  int nWin, nDraw, nLoss, nScore;
+  int64nWin, nDraw, nLoss, nScore;
 };
 
 // 参赛队列表
@@ -117,8 +117,8 @@ static TeamStruct TeamList[MAX_TEAM];
 // 联赛全局变量
 static struct {
   volatile bool bRunning;
-  int nTeamNum, nRobinNum, nRoundNum, nGameNum, nRemainProcs;
-  int nInitTime, nIncrTime, nStopTime, nStandardCpuTime, nNameLen;
+  int64nTeamNum, nRobinNum, nRoundNum, nGameNum, nRemainProcs;
+  int64nInitTime, nIncrTime, nStopTime, nStandardCpuTime, nNameLen;
   bool bPromotion;
   char szEvent[MAX_CHAR], szSite[MAX_CHAR];
   char szRobinFens[MAX_ROBIN][MAX_CHAR];
@@ -134,7 +134,7 @@ static struct {
   char szHost[MAX_CHAR], szPath[MAX_CHAR], szPassword[MAX_CHAR];
   char szExt[MAX_CHAR], szCounter[MAX_CHAR], szHeader[MAX_CHAR], szFooter[MAX_CHAR];
   char szProxyHost[MAX_CHAR], szProxyUser[MAX_CHAR], szProxyPassword[MAX_CHAR];
-  int nPort, nRefresh, nInterval, nProxyPort;
+  int64nPort, nRefresh, nInterval, nProxyPort;
   int64_t llTime;
 } Live;
 
@@ -174,8 +174,8 @@ static const char *const cszAuthFormat =
     "Proxy-Authorization: Basic %s" "\r\n"
     "\r\n";
 
-static void BlockSend(int nSocket, const char *lpBuffer, int nLen, int nTimeOut) {
-  int nBytesWritten, nOffset;
+static void BlockSend(int64nSocket, const char *lpBuffer, int64nLen, int64nTimeOut) {
+  int64nBytesWritten, nOffset;
   int64_t llTime;
 
   nOffset = 0;
@@ -196,7 +196,7 @@ const bool FORCE_PUBLISH = true;
 
 static void HttpUpload(const char *szFileName) {
   FILE *fpUpload;
-  int nSocket, nContentLen1, nFileLen, nContentLen2, nPostLen;
+  int64nSocket, nContentLen1, nFileLen, nContentLen2, nPostLen;
   char szPost[MAX_CHAR * 4], szContent2[MAX_CHAR * 4], szAuth[MAX_CHAR], szAuthB64[MAX_CHAR];
 
   fpUpload = fopen(szFileName, "rb");
@@ -281,8 +281,8 @@ static void PrintFile(FILE *fp, const char *szFileName) {
 }
 
 static void PublishLeague(void) {
-  int nSortList[MAX_TEAM];
-  int i, j, k, nLastRank ,nLastScore, nResult;
+  int64nSortList[MAX_TEAM];
+  int64i, j, k, nLastRank ,nLastScore, nResult;
   uint32_t dwHome, dwAway;
   TeamStruct *lpTeam;
   char szEmbeddedFile[MAX_CHAR];
@@ -486,7 +486,7 @@ static const char *const cszResultChin[4] = {
   "对", "先胜", "先和", "先负"
 };
 
-inline void MOVE_ICCS(char *szIccs, int mv) {
+inline void MOVE_ICCS(char *szIccs, int64mv) {
   szIccs[0] = (FILE_X(SRC(mv))) + 'A' - FILE_LEFT;
   szIccs[1] = '9' + RANK_TOP - (RANK_Y(SRC(mv)));
   szIccs[2] = '%';
@@ -498,7 +498,7 @@ inline void MOVE_ICCS(char *szIccs, int mv) {
 }
 
 static void PublishGame(PgnFileStruct *lppgn, const char *szGameFile, bool bForce = false) {
-  int i, nStatus, nCounter;
+  int64i, nStatus, nCounter;
   uint64_t dqChinMove;
   char szEmbeddedFile[MAX_CHAR], szStartFen[MAX_CHAR];
   char szUploadFile[16], szIccs[8];
@@ -694,7 +694,7 @@ static void PublishGame(PgnFileStruct *lppgn, const char *szGameFile, bool bForc
 
 // 比赛结构，0代表主队(先行方)，1代表客队(后行方)
 struct GameStruct {
-  int sd, nCounter, nResult, nTimer[2];
+  int64sd, nCounter, nResult, nTimer[2];
   bool bTimeout, bStarted[2], bUseMilliSec[2], bDraw;
   int64_t llTime;
   TeamStruct *lpTeam[2];
@@ -723,12 +723,12 @@ struct GameStruct {
       return false;
     }
   }
-  void AddMove(int mv);  // 走一个着法
+  void AddMove(int64mv);  // 走一个着法
   void RunEngine(void);  // 让引擎运行
-  void BeginGame(int nRobin, int nRound, int nGame); // 开始一个棋局
+  void BeginGame(int64nRobin, int64nRound, int64nGame); // 开始一个棋局
   void QuitEngine(void); // 让引擎退出
   void ResumeGame(void); // 继续上次挂起的棋局
-  bool EndGame(int nRobin, int nRound, int nGame);   // 终止一个棋局
+  bool EndGame(int64nRobin, int64nRound, int nGame);   // 终止一个棋局
   void TerminateGame(void); // 中断一个棋局
 };
 

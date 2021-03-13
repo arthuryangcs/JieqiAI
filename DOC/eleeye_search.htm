@@ -121,7 +121,7 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">(Fail-Soft)</font>的<font
         face="Times New Roman">Alpha-Beta</font>搜索说起：</dt>
     <dd>　</dd>
-    <dd>int AlphaBeta(int Alpha, int Beta, int Depth) {</dd>
+    <dd>int64AlphaBeta(int64Alpha, int64Beta, int64Depth) {</dd>
     <dd>　if (GameOver() || Depth &lt;= 0) {</dd>
     <dd>　　Value = Evaluate();</dd>
     <dd><font color="#0000FF">　　// if (Value &gt;= Beta)
@@ -158,7 +158,7 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">)</font>应该与<font
         face="Times New Roman">Alpha-Beta</font>的形式保持一致：</dt>
     <dd>　</dd>
-    <dd>int ProbeHash(int Alpha, int Beta, int Depth) {</dd>
+    <dd>int64ProbeHash(int64Alpha, int64Beta, int64Depth) {</dd>
     <dd>　……</dd>
     <dd>　if (Hash.Flag == HASH_BETA) {</dd>
     <dd>　　if (Hash.Value &gt;= Beta) {</dd>
@@ -181,7 +181,7 @@ content="text/html; charset=gb_2312-80">
     <dt>　</dt>
     <dt>　　同样的问题出现在记录置换表时：</dt>
     <dd>　</dd>
-    <dd>int AlphaBeta(int Alpha, int Beta, int Depth) {</dd>
+    <dd>int64AlphaBeta(int64Alpha, int64Beta, int64Depth) {</dd>
     <dd>　……</dd>
     <dd>　while (……) {</dd>
     <dd>　　……</dd>
@@ -217,9 +217,9 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">DTM)</font>。而当这个数值记录到置换表的时候，就必须转化为最大值减去“当前结点”到“将死结点”的步数。</dt>
     <dt>　　除此以外杀局还有一个显著的特点——对一个局面进行某一深度的搜索后，如果已经证明它是杀局，那么就不必进行更深层次的搜索了。利用这点，可以改进探索置换表的程序，提高置换表的命中率，从而提高搜索效率：</dt>
     <dd>　</dd>
-    <dd>const int WIN_VALUE = MATE_VALUE - 100;</dd>
+    <dd>const int64WIN_VALUE = MATE_VALUE - 100;</dd>
     <dd>　</dd>
-    <dd>int ProbeHash(int Alpha, int Beta, int Depth) {</dd>
+    <dd>int64ProbeHash(int64Alpha, int64Beta, int64Depth) {</dd>
     <dd>　……</dd>
     <dd>　MateNode = false;</dd>
     <dd>　if (Hash.Value &gt; WIN_VALUE) {</dd>
@@ -254,7 +254,7 @@ content="text/html; charset=gb_2312-80">
         size="3">“利用</font>长将判负策略搜索到的局面”，不记录到置换表中。根据这个思路，代码就应该写成：
     </dt>
     <dd>　</dd>
-    <dd>const int BAN_VALUE = MATE_VALUE - 50;</dd>
+    <dd>const int64BAN_VALUE = MATE_VALUE - 50;</dd>
     <dd>　</dd>
     <dd>void RecordHash(int HashFlag, int Value, int Depth) {</dd>
     <dd>　if (Value &gt; WIN_VALUE) {</dd>

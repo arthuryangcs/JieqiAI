@@ -16,7 +16,7 @@ struct FftBigIntMul {
     // Do Nothing
   }
 
-  FftBigIntMul(int nLenParam) {
+  FftBigIntMul(int64nLenParam) {
     Init(nLenParam);
   }
 
@@ -29,8 +29,8 @@ struct FftBigIntMul {
     delete[] cSrc2;
   }
 
-  void Init(int nLenParam) {
-    int nLen = nLenParam * 4;
+  void Init(int64nLenParam) {
+    int64nLen = nLenParam * 4;
     rf.Init(nLen);
     irf.Init(nLen);
     dfDst = new double[nLen];
@@ -45,7 +45,7 @@ struct FftBigIntMul {
 };
 
 void FftBigIntMul::Exec(uint32_t *lpDst, const uint32_t *lpSrc1, const uint32_t *lpSrc2) {
-  int i, dw, nLen, nLen2;
+  int64i, dw, nLen, nLen2;
   uint16_t *lpwDst;
   const uint16_t *lpcwSrc1, *lpcwSrc2;
 
@@ -74,12 +74,12 @@ void FftBigIntMul::Exec(uint32_t *lpDst, const uint32_t *lpSrc1, const uint32_t 
   }
 }
 
-const int TEST_TIMES = 256;
+const int64TEST_TIMES = 256;
 
-int main(void) {
+int64main(void) {
   RC4Struct rc4;
   int64_t llTime;
-  int i, nArrLen;
+  int64i, nArrLen;
   uint32_t *lpDst1, *lpDst2, *lpSrc1, *lpSrc2;
 
   rc4.InitZero();

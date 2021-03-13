@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../cchess/pgnfile.h"
 #include "xqffile.h"
 
-static const int cnResultTrans[4] = {
+static const int64cnResultTrans[4] = {
   0, 1, 3, 2
 };
 
@@ -49,7 +49,7 @@ static const unsigned char cucsqXqf2Square[96] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const int cpcXqf2Piece[32] = {
+static const int64cpcXqf2Piece[32] = {
   23, 21, 19, 17, 16, 18, 20, 22, 24, 25, 26, 27, 28, 29, 30, 31,
   39, 37, 35, 33, 32, 34, 36, 38, 40, 41, 42, 43, 44, 45, 46, 47
 };
@@ -57,12 +57,12 @@ static const int cpcXqf2Piece[32] = {
 // 密钥流掩码
 static const char *const cszEncStreamMask = "[(C) Copyright Mr. Dong Shiwei.]";
 
-inline int Square54Plus221(int x) {
+inline int64Square54Plus221(int64x) {
   return x * x * 54 + 221;
 }
 
-inline void ReadAndDecrypt(FILE *fp, void *lp, int nLen, const int *nEncStream, int &nEncIndex) {
-  int i;
+inline void ReadAndDecrypt(FILE *fp, void *lp, int64nLen, const int64*nEncStream, int64&nEncIndex) {
+  int64i;
   fread(lp, nLen, 1, fp);
   for (i = 0; i < nLen; i ++) {
     ((uint8_t *) lp)[i] -= nEncStream[nEncIndex];
@@ -75,14 +75,14 @@ inline void GetXqfString(char *szPgn, const char *szXqf) {
   szPgn[szXqf[0]] = '\0';
 }
 
-static const int XQF2PGN_ERROR_OPEN = -3;
-static const int XQF2PGN_ERROR_FORMAT = -2;
-static const int XQF2PGN_ERROR_CREATE = -1;
-static const int XQF2PGN_OK = 0;
+static const int64XQF2PGN_ERROR_OPEN = -3;
+static const int64XQF2PGN_ERROR_FORMAT = -2;
+static const int64XQF2PGN_ERROR_CREATE = -1;
+static const int64XQF2PGN_OK = 0;
 
-int Xqf2Pgn(const char *szXqfFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
-  int i, nArg0, nArgs[4];
-  int nCommentLen, mv, nStatus;
+int64Xqf2Pgn(const char *szXqfFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
+  int64i, nArg0, nArgs[4];
+  int64nCommentLen, mv, nStatus;
   bool bHasNext;
   PgnFileStruct pgn;
   PositionStruct pos;
@@ -91,13 +91,13 @@ int Xqf2Pgn(const char *szXqfFile, const char *szPgnFile, const EccoApiStruct &E
   XqfHeaderStruct xqfhd;  
   XqfMoveStruct xqfmv;
   // 版本号和加密偏移值
-  int nXqfVer, nPieceOff, nSrcOff, nDstOff, nCommentOff;
+  int64nXqfVer, nPieceOff, nSrcOff, nDstOff, nCommentOff;
   // 密钥流
-  int nEncStream[32];
+  int64nEncStream[32];
   // 密钥流索引号
-  int nEncIndex;
+  int64nEncIndex;
   // 局面初始位置
-  int nPiecePos[32];
+  int64nPiecePos[32];
 
   uint32_t dwEccoIndex, dwFileMove[20];
 
@@ -246,7 +246,7 @@ int Xqf2Pgn(const char *szXqfFile, const char *szPgnFile, const EccoApiStruct &E
 
 #ifndef MXQFCONV_EXE
 
-int main(int argc, char **argv) {
+int64main(int64argc, char **argv) {
   EccoApiStruct EccoApi;
   char szLibEccoPath[1024];
 

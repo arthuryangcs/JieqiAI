@@ -21,16 +21,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include "../eleeye/position.h"
 
-const int MAX_CHAR = 1024;
+const int64MAX_CHAR = 1024;
 
-int main(char argc, char **argv) {
+int64main(char argc, char **argv) {
   char szLineStr[MAX_CHAR];
   MoveStruct mvs[MAX_GEN_MOVES];
   PositionStruct pos;
   FILE *fp;
-  int nPosNum, sqSrc, sqDst, i;
-  int nThisLegal, nThisGened, nThisMoved, nThisCheck;
-  int nTotalLegal, nTotalGened, nTotalMoved, nTotalCheck;
+  int64nPosNum, sqSrc, sqDst, i;
+  int64nThisLegal, nThisGened, nThisMoved, nThisCheck;
+  int64nTotalLegal, nTotalGened, nTotalMoved, nTotalCheck;
 
   if (argc <= 1) {
     printf("=== ElephantEye Unit Test Program ===\n");

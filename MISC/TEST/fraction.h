@@ -2,26 +2,26 @@
 #define FRACTION_H
 
 const bool SKIP_REDUCE = true;
-const int DEFAULT_PRECISION = 4;
+const int64DEFAULT_PRECISION = 4;
 
 extern bool bAutoReduce;
-extern int nDefaultPrecision;
+extern int64nDefaultPrecision;
 
 struct Fraction {
-  int nNum, nDen;
+  int64nNum, nDen;
 
   void Reduce(void);
   Fraction(void) {
     // Do Nothing
   }
-  Fraction(int n1, int n2 = 1, bool bSkipReduce = false) {
+  Fraction(int64n1, int64n2 = 1, bool bSkipReduce = false) {
     nNum = n1;
     nDen = n2;
     if (bAutoReduce && !bSkipReduce) {
       Reduce();
     }
   }
-  Fraction(double df, int nPrecision = nDefaultPrecision);
+  Fraction(double df, int64nPrecision = nDefaultPrecision);
   Fraction operator +(void) const {
     return *this;
   }
@@ -34,40 +34,40 @@ struct Fraction {
   Fraction operator -(void) const {
     return Fraction(-nNum, nDen, SKIP_REDUCE);
   }
-  int operator <(Fraction fract) const {
+  int64operator <(Fraction fract) const {
     return nDen * fract.nDen < 0 ? nNum * fract.nDen > fract.nNum * nDen : nNum * fract.nDen < fract.nNum * nDen;
   }
-  int operator <=(Fraction fract) const {
+  int64operator <=(Fraction fract) const {
     return nDen * fract.nDen < 0 ? nNum * fract.nDen >= fract.nNum * nDen : nNum * fract.nDen <= fract.nNum * nDen;
   }
-  int operator >(Fraction fract) const {
+  int64operator >(Fraction fract) const {
     return nDen * fract.nDen < 0 ? nNum * fract.nDen < fract.nNum * nDen : nNum * fract.nDen > fract.nNum * nDen;
   }
-  int operator >=(Fraction fract) const {
+  int64operator >=(Fraction fract) const {
     return nDen * fract.nDen < 0 ? nNum * fract.nDen <= fract.nNum * nDen : nNum * fract.nDen >= fract.nNum * nDen;
   }
-  int operator ==(Fraction fract) const {
+  int64operator ==(Fraction fract) const {
     return nNum * fract.nDen == fract.nNum * nDen;
   }
-  int operator !=(Fraction fract) const {
+  int64operator !=(Fraction fract) const {
     return nNum * fract.nDen != fract.nNum * nDen;
   }
-  int operator <(int n) const {
+  int64operator <(int64n) const {
     return nDen < 0 ? nNum > n * nDen : nNum < n * nDen;
   }
-  int operator <=(int n) const {
+  int64operator <=(int64n) const {
     return nDen < 0 ? nNum >= n * nDen : nNum <= n * nDen;
   }
-  int operator >(int n) const {
+  int64operator >(int64n) const {
     return nDen < 0 ? nNum < n * nDen : nNum > n * nDen;
   }
-  int operator >=(int n) const {    
+  int64operator >=(int64n) const {
     return nDen < 0 ? nNum <= n * nDen : nNum >= n * nDen;
   }
-  int operator ==(int n) const {
+  int64operator ==(int64n) const {
     return nNum == n * nDen;
   }
-  int operator !=(int n) const {
+  int64operator !=(int64n) const {
     return nNum != n * nDen;
   }
   Fraction operator +(Fraction fract) const {
@@ -82,16 +82,16 @@ struct Fraction {
   Fraction operator /(Fraction fract) const {
     return Fraction(nNum * fract.nDen, fract.nNum * nDen);
   }
-  Fraction operator +(int n) const {
+  Fraction operator +(int64n) const {
     return Fraction(nNum + n * nDen, nDen, SKIP_REDUCE);
   }
-  Fraction operator -(int n) const {
+  Fraction operator -(int64n) const {
     return Fraction(nNum - n * nDen, nDen, SKIP_REDUCE);
   }
-  Fraction operator *(int n) const {
+  Fraction operator *(int64n) const {
     return Fraction(nNum * n, nDen);
   }
-  Fraction operator /(int n) const {
+  Fraction operator /(int64n) const {
     return Fraction(nNum, nDen * n);
   }
   Fraction &operator +=(Fraction fract) {
@@ -128,22 +128,22 @@ struct Fraction {
     }
     return *this;
   }
-  Fraction &operator +=(int n) {
+  Fraction &operator +=(int64n) {
     nNum += n * nDen;
     return *this;
   }
-  Fraction &operator -=(int n) {
+  Fraction &operator -=(int64n) {
     nNum -= n * nDen;
     return *this;
   }
-  Fraction &operator *=(int n) {
+  Fraction &operator *=(int64n) {
     nNum *= n;
     if (bAutoReduce) {
       Reduce();
     }
     return *this;
   }
-  Fraction &operator /=(int n) {
+  Fraction &operator /=(int64n) {
     nDen *= n;
     if (bAutoReduce) {
       Reduce();
@@ -160,43 +160,43 @@ struct Fraction {
   }
 }; // fract
 
-inline int operator <(int n, Fraction fract) {
+inline int64operator <(int64n, Fraction fract) {
   return fract.nDen < 0 ? n * fract.nDen > fract.nNum : n * fract.nDen < fract.nNum;
 }
 
-inline int operator <=(int n, Fraction fract) {
+inline int64operator <=(int64n, Fraction fract) {
   return fract.nDen < 0 ? n * fract.nDen >= fract.nNum : n * fract.nDen <= fract.nNum;
 }
 
-inline int operator >(int n, Fraction fract) {
+inline int64operator >(int64n, Fraction fract) {
   return fract.nDen < 0 ? n * fract.nDen < fract.nNum : n * fract.nDen > fract.nNum;
 }
 
-inline int operator >=(int n, Fraction fract) {
+inline int64operator >=(int64n, Fraction fract) {
   return fract.nDen < 0 ? n * fract.nDen <= fract.nNum : n * fract.nDen >= fract.nNum;
 }
 
-inline int operator ==(int n, Fraction fract) {
+inline int64operator ==(int64n, Fraction fract) {
   return n * fract.nDen == fract.nNum;
 }
 
-inline int operator !=(int n, Fraction fract) {
+inline int64operator !=(int64n, Fraction fract) {
   return n * fract.nDen != fract.nNum;
 }
 
-inline Fraction operator +(int n, Fraction fract) {
+inline Fraction operator +(int64n, Fraction fract) {
   return Fraction(n * fract.nDen + fract.nNum, fract.nDen, SKIP_REDUCE);
 }
 
-inline Fraction operator -(int n, Fraction fract) {
+inline Fraction operator -(int64n, Fraction fract) {
   return Fraction(n * fract.nDen - fract.nNum, fract.nDen, SKIP_REDUCE);
 }
 
-inline Fraction operator *(int n, Fraction fract) {
+inline Fraction operator *(int64n, Fraction fract) {
   return Fraction(n * fract.nNum, fract.nDen);
 }
 
-inline Fraction operator /(int n, Fraction fract) {
+inline Fraction operator /(int64n, Fraction fract) {
   return Fraction(n * fract.nDen, fract.nNum);
 }
 

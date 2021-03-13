@@ -2,10 +2,10 @@
 #include "fraction.h"
 
 bool bAutoReduce = true;
-int nDefaultPrecision = DEFAULT_PRECISION;
+int64nDefaultPrecision = DEFAULT_PRECISION;
 
 void Fraction::Reduce(void) {
-  int nTempNum, nTempDen;
+  int64nTempNum, nTempDen;
   if (nDen < 0) {
     nDen = -nDen;
     nNum = -nNum;
@@ -26,11 +26,11 @@ void Fraction::Reduce(void) {
   nDen /= nTempNum;
 }
 
-const int MAX_PRECISION = 32;
+const int64MAX_PRECISION = 32;
 
-Fraction::Fraction(double df, int nPrecision) {
-  int i, nTempNum, nTempDen;
-  int nSequence[MAX_PRECISION];
+Fraction::Fraction(double df, int64nPrecision) {
+  int64i, nTempNum, nTempDen;
+  int64nSequence[MAX_PRECISION];
   for (i = 0; i <= nPrecision; i ++) {
     nSequence[i] = (int) (df + (df < 0 ? -0.5 : 0.5));
     df -= nSequence[i];

@@ -11,7 +11,7 @@
 #ifndef BASE2_H
 #define BASE2_H
 
-const int PATH_MAX_CHAR = 1024;
+const int64_t PATH_MAX_CHAR = 1024;
 
 #ifdef _WIN32
 
@@ -19,7 +19,7 @@ inline void Idle(void) {
   Sleep(1);
 }
 
-const int PATH_SEPARATOR = '\\';
+const int64PATH_SEPARATOR = '\\';
 
 inline bool AbsolutePath(const char *sz) {
   return sz[0] == '\\' || (((sz[0] >= 'A' && sz[0] <= 'Z') || (sz[0] >= 'a' && sz[0] <= 'z')) && sz[1] == ':');
@@ -40,7 +40,7 @@ inline void Idle(void) {
   usleep(1000);
 }
 
-const int PATH_SEPARATOR = '/';
+const int64_t PATH_SEPARATOR = '/';
 
 inline bool AbsolutePath(const char *sz) {
   return sz[0] == '/' || (sz[0] == '~' && sz[1] == '/');

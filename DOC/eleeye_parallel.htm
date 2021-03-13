@@ -92,16 +92,16 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">(Windows</font>版本<font
         face="Times New Roman">)</font>：</dt>
     <dd>　</dd>
-    <dd>static volatile int IdleThreads;</dd>
+    <dd>static volatile int64IdleThreads;</dd>
     <dd>　</dd>
     <dd>struct ArgListStruct {</dd>
     <dd>　volatile bool Active;</dd>
-    <dd>　volatile int Value;</dd>
+    <dd>　volatile int64Value;</dd>
     <dd>};</dd>
     <dd>　</dd>
     <dd>static void *ThreadEntry(ArgListStruct *ArgListPtr);</dd>
     <dd>　</dd>
-    <dd>static int Fibonacci(int Arg) {</dd>
+    <dd>static int64Fibonacci(int64Arg) {</dd>
     <dd>　if (Arg &lt; 2) {</dd>
     <dd>　　return 1;</dd>
     <dd>　} else {</dd>
@@ -109,9 +109,9 @@ content="text/html; charset=gb_2312-80">
     <dd>　}</dd>
     <dd>}</dd>
     <dd>　</dd>
-    <dd>static int FibonacciSMP(int Arg) {</dd>
+    <dd>static int64FibonacciSMP(int64Arg) {</dd>
     <dd>　DWORD ThreadId;</dd>
-    <dd>　int Result;</dd>
+    <dd>　int64Result;</dd>
     <dd>　ArgListStruct ArgList;</dd>
     <dd>　if (Arg &lt; 2) {</dd>
     <dd>　　return 1;</dd>
@@ -191,7 +191,7 @@ content="text/html; charset=gb_2312-80">
     <dt>　　并行计算的博弈程序会偶尔出现一种情况，即两个线程同时存取同一置换表项，为避免错误可以使用加锁技术：</dt>
     <dd>　</dd>
     <dd>struct HashRecord {</dd>
-    <dd>　volatile int Lock;</dd>
+    <dd>　volatile int64Lock;</dd>
     <dd>　……</dd>
     <dd>};</dd>
     <dd>　</dd>

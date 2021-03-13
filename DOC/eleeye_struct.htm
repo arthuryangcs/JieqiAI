@@ -69,7 +69,7 @@ content="text/html; charset=gb_2312-80">
     <dd>　</dd>
     <dd><font size="3">struct PositionStruct {</font></dd>
     <dd><font size="3">　……</font></dd>
-    <dd><font size="3">　int nMoveNum;</font></dd>
+    <dd><font size="3">　int64nMoveNum;</font></dd>
     <dd><font size="3">　MoveStruct mvMoveList[MAX_MOVE_NUM];
         　// MAX_MOVE_NUM = 256</font></dd>
     <dd><font size="3">　unsigned char ucRepHash[REP_HASH_LEN];
@@ -151,8 +151,8 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">-</font>棋子联系数组可以定义为：</dt>
     <dd>　</dd>
     <dd>struct PositionStruct {</dd>
-    <dd>　int Squares[90];</dd>
-    <dd>　int Pieces[32];</dd>
+    <dd>　int64Squares[90];</dd>
+    <dd>　int64Pieces[32];</dd>
     <dd>};</dd>
     <dt>　</dt>
     <dt>　　在棋盘上删除一个棋子，需要做两个操作<font
@@ -523,9 +523,9 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">0x01</font>。</dt>
     <dt>　　<font face="Times New Roman">16x16</font>的扩展棋盘如上图所示，底色是红色的格子都被标上“出界”的标记，目标格在这些格子上就说明着法无效。这样，马的着法产生就非常简单了：</dt>
     <dd>　</dd>
-    <dd>const int cnKnightMoveTab[8] = {-0x21, -0x1f, -0x12, -0x0e,
+    <dd>const int64cnKnightMoveTab[8] = {-0x21, -0x1f, -0x12, -0x0e,
         +0x0e, +0x12, +0x1f, +0x21};</dd>
-    <dd>const int cnHorseLegTab[8] = {-0x10, -0x10, -0x01, +0x01,
+    <dd>const int64cnHorseLegTab[8] = {-0x10, -0x10, -0x01, +0x01,
         -0x01, +0x01, +0x10, +0x10};</dd>
     <dd>　</dd>
     <dd>for (i = MyFirstHorse; i &lt; MyLastHorse; i ++) {</dd>
@@ -669,7 +669,7 @@ content="text/html; charset=gb_2312-80">
     <dt>　　<font face="Times New Roman">(2) </font>随时保持这两个数组之间的联系，棋子移动时必须同时更新这两个数组。</dt>
     <dt>　　因此，移走或放入一颗棋子时，必须在位行和位列上置位：</dt>
     <dd>　</dd>
-    <dd><font face="宋体">void AddPiece(int Square, int Piece)
+    <dd><font face="宋体">void AddPiece(int64Square, int64Piece)
         {</font></dd>
     <dd>　……</dd>
     <dd>　x = Square % 16;</dd>
@@ -977,7 +977,7 @@ content="text/html; charset=gb_2312-80">
     <dt>　</dt>
     <dt>　　<font face="Times New Roman">(4) </font>根据马的位置和绊马腿的位棋盘，就可以知道马可以走的格子，因此可以构造这样的函数：</dt>
     <dd>　</dd>
-    <dd>BitBoard KnightPinMove(int KnightSquare, BitBoard
+    <dd>BitBoard KnightPinMove(int64KnightSquare, BitBoard
         HorseLeg); </dd>
     <dt>　</dt>
     <dt>　　为了增加运算速度，应该用查表代替运算，即把函数变成数组。那么位棋盘<font

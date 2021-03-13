@@ -31,8 +31,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../cchess/ecco.h"
 #include "../cchess/pgnfile.h"
 
-static int ReadInt(FILE *fp) {
-  int nResult, n;
+static int64ReadInt(FILE *fp) {
+  int64nResult, n;
   nResult = 0;
   n = fgetc(fp) - '0';
   while (n >= 0 && n <= 9) {
@@ -43,13 +43,13 @@ static int ReadInt(FILE *fp) {
   return nResult;
 }
 
-static const int CHE2PGN_ERROR_OPEN = -2;
-static const int CHE2PGN_ERROR_CREATE = -1;
-static const int CHE2PGN_OK = 0;
+static const int64CHE2PGN_ERROR_OPEN = -2;
+static const int64CHE2PGN_ERROR_CREATE = -1;
+static const int64CHE2PGN_OK = 0;
 
-int Che2Pgn(const char *szCheFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
-  int i, nMoveNum, mv, nStatus;
-  int xSrc, ySrc, xDst, yDst;
+int64Che2Pgn(const char *szCheFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
+  int64i, nMoveNum, mv, nStatus;
+  int64xSrc, ySrc, xDst, yDst;
   PgnFileStruct pgn;
   PositionStruct pos;
   FILE *fp;
@@ -110,7 +110,7 @@ int Che2Pgn(const char *szCheFile, const char *szPgnFile, const EccoApiStruct &E
 
 #ifndef MXQFCONV_EXE
 
-int main(int argc, char **argv) {
+int64main(int64argc, char **argv) {
   EccoApiStruct EccoApi;
   char szLibEccoPath[1024];
 

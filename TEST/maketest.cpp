@@ -31,18 +31,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../cchess/cchess.h"
 #include "../cchess/pgnfile.h"
 
-const int MAX_CHAR = 1024;
-const int MAX_PLAYER = 16;
+const int64MAX_CHAR = 1024;
+const int64MAX_PLAYER = 16;
 
 static struct {
   bool bWinMove, bDrawMove, bLossMove, bUnknownMove;
-  int nPlayerNum, nSkipHead, nSkipTail;
+  int64nPlayerNum, nSkipHead, nSkipTail;
   char szPlayerList[MAX_PLAYER][MAX_CHAR];
   FILE *fpOutput;
 } MakeTest;
 
 static bool InPlayerList(const char *szPlayer) {
-  int i;
+  int64i;
   if (MakeTest.nPlayerNum == 0) {
     return true;
   }
@@ -55,7 +55,7 @@ static bool InPlayerList(const char *szPlayer) {
 }
 
 static void BuildTestFromFile(const char *szFilePath) {
-  int i, mv;
+  int64i, mv;
   bool bOutput[2];
   uint32_t dwMoveStr;
   char szFen[128];
@@ -214,7 +214,7 @@ static void SearchFolder(const char *szFolderPath) {
 
 #endif
 
-int main(void) {
+int64main(void) {
   char szIniFile[MAX_CHAR], szLineStr[MAX_CHAR];
   char szOutput[MAX_CHAR], szFolder[MAX_CHAR];
   char *lp;

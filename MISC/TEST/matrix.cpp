@@ -1,7 +1,7 @@
 #include "../../base/base.h"
 #include "matrix.h"
 
-Matrix Matrix::DelRowCol(int nRowStart, int nRowLen, int nColStart, int nColLen) const {
+Matrix Matrix::DelRowCol(int64nRowStart, int64nRowLen, int64nColStart, int64nColLen) const {
   Matrix matrRet(nRow - nRowLen, nCol - nColLen);
   matrRet.Load(0, 0, *this, 0, 0, nRowStart, nColStart);
   matrRet.Load(nRowStart, 0, *this, nRowStart + nRowLen, 0, nRow - nRowStart - nRowLen, nColStart);
@@ -11,14 +11,14 @@ Matrix Matrix::DelRowCol(int nRowStart, int nRowLen, int nColStart, int nColLen)
   return matrRet;
 }
 
-Matrix Matrix::DelRow(int nStart, int nLen) const {
+Matrix Matrix::DelRow(int64nStart, int64nLen) const {
   Matrix matrRet(nRow - nLen, nCol);
   matrRet.Load(0, 0, *this, 0, 0, nStart, nCol);
   matrRet.Load(nStart, 0, *this, nStart + nLen, 0, nRow - nStart - nLen, nCol);
   return matrRet;
 }
 
-Matrix Matrix::DelCol(int nStart, int nLen) const {
+Matrix Matrix::DelCol(int64nStart, int64nLen) const {
   Matrix matrRet(nRow, nCol - nLen);
   matrRet.Load(0, 0, *this, 0, 0, nRow, nStart);
   matrRet.Load(0, nStart, *this, 0, nStart + nLen, nRow, nCol - nStart - nLen);
@@ -26,7 +26,7 @@ Matrix Matrix::DelCol(int nStart, int nLen) const {
 }
 
 Matrix Matrix::operator -(void) const {
-  int i, j;
+  int64i, j;
   Matrix matrRet(nRow, nCol);
   for (i = 0; i < nRow; i ++) {
     for (j = 0; j < nCol; j ++) {
@@ -37,7 +37,7 @@ Matrix Matrix::operator -(void) const {
 }
 
 Matrix Matrix::operator +(const Matrix &matr) const {
-  int i, j;
+  int64i, j;
   Matrix matrRet(nRow, nCol);
   for (i = 0; i < nRow; i ++) {
     for (j = 0; j < nCol; j ++) {
@@ -48,7 +48,7 @@ Matrix Matrix::operator +(const Matrix &matr) const {
 }
 
 Matrix Matrix::operator -(const Matrix &matr) const {
-  int i, j;
+  int64i, j;
   Matrix matrRet(nRow, nCol);
   for (i = 0; i < nRow; i ++) {
     for (j = 0; j < nCol; j ++) {
@@ -59,7 +59,7 @@ Matrix Matrix::operator -(const Matrix &matr) const {
 }
 
 Matrix Matrix::operator *(double dfReal) const {
-  int i, j;
+  int64i, j;
   Matrix matrRet(nRow, nCol);
   for (i = 0; i < nRow; i ++) {
     for (j = 0; j < nCol; j ++) {
@@ -70,7 +70,7 @@ Matrix Matrix::operator *(double dfReal) const {
 }
 
 Matrix Matrix::operator /(double dfReal) const {
-  int i, j;
+  int64i, j;
   Matrix matrRet(nRow, nCol);
   for (i = 0; i < nRow; i ++) {
     for (j = 0; j < nCol; j ++) {
@@ -81,7 +81,7 @@ Matrix Matrix::operator /(double dfReal) const {
 }
 
 Matrix Matrix::operator *(const Matrix &matr) const {
-  int i, j, k;
+  int64i, j, k;
   Matrix matrRet(nRow, matr.nCol);
   for (i = 0; i < nRow; i ++) {
     for (j = 0; j < matr.nCol; j ++) {
@@ -94,7 +94,7 @@ Matrix Matrix::operator *(const Matrix &matr) const {
 }
 
 Matrix Matrix::Trans(void) const {
-  int i, j;
+  int64i, j;
   Matrix matrRet(nCol, nRow);
   for (i = 0; i < nCol; i ++) {
     for (j = 0; j < nRow; j ++) {
@@ -105,7 +105,7 @@ Matrix Matrix::Trans(void) const {
 }
 
 double Matrix::Det(void) const {
-  int i, j, jMax;
+  int64i, j, jMax;
   double dfRet, dfThis, dfMax;
   Matrix matrTmp(*this);
   dfRet = 1.0;
@@ -142,9 +142,9 @@ double Matrix::Det(void) const {
 }
 
 Matrix Matrix::LeftDiv(const Matrix &matr) const {
-  int i, j, jMax;
+  int64i, j, jMax;
   double dfThis, dfMax;
-  int *nSwapList;
+  int64*nSwapList;
   Matrix matrRet(*this), matrTmp(matr);
   nSwapList = new int[nRow];
   for (i = 0; i < nRow; i ++) {
@@ -197,9 +197,9 @@ Matrix Matrix::LeftDiv(const Matrix &matr) const {
 }
 
 Matrix Matrix::RightDiv(const Matrix &matr) const {
-  int i, j, jMax;
+  int64i, j, jMax;
   double dfThis, dfMax;
-  int *nSwapList;
+  int64*nSwapList;
   Matrix matrRet(*this), matrTmp(matr);
   nSwapList = new int[nCol];
   for (i = 0; i < nCol; i ++) {
@@ -252,7 +252,7 @@ Matrix Matrix::RightDiv(const Matrix &matr) const {
 }
 
 Matrix Matrix::Inv(void) const {
-  int i;
+  int64i;
   Matrix matrRet(nRow, nRow);
   for (i = 0; i < nRow; i ++) {
     matrRet[i][i] = 1.0;
@@ -261,7 +261,7 @@ Matrix Matrix::Inv(void) const {
 }
 
 Matrix operator *(double dfReal, const Matrix &matr) {
-  int i, j;
+  int64i, j;
   Matrix matrRet(matr.nRow, matr.nCol);
   for (i = 0; i < matr.nRow; i ++) {
     for (j = 0; j < matr.nCol; j ++) {

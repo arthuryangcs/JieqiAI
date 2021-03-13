@@ -31,12 +31,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../cchess/ecco.h"
 #include "../cchess/pgnfile.h"
 
-static const int CCM2PGN_ERROR_OPEN = -2;
-static const int CCM2PGN_ERROR_CREATE = -1;
-static const int CCM2PGN_OK = 0;
+static const int64CCM2PGN_ERROR_OPEN = -2;
+static const int64CCM2PGN_ERROR_CREATE = -1;
+static const int64CCM2PGN_OK = 0;
 
-int Ccm2Pgn(const char *szCcmFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
-  int mv, nStatus;
+int64Ccm2Pgn(const char *szCcmFile, const char *szPgnFile, const EccoApiStruct &EccoApi) {
+  int64mv, nStatus;
   bool bRead, bFlip;
   PgnFileStruct pgn;
   PositionStruct pos;
@@ -100,7 +100,7 @@ int Ccm2Pgn(const char *szCcmFile, const char *szPgnFile, const EccoApiStruct &E
 
 #ifndef MXQFCONV_EXE
 
-int main(int argc, char **argv) {
+int64main(int64argc, char **argv) {
   EccoApiStruct EccoApi;
   char szLibEccoPath[1024];
 

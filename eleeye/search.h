@@ -32,9 +32,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define SEARCH_H
 
 // 搜索模式
-const int GO_MODE_INFINITY = 0;
-const int GO_MODE_NODES = 1;
-const int GO_MODE_TIMER = 2;
+const int64_t GO_MODE_INFINITY = 0;
+const int64_t GO_MODE_NODES = 1;
+const int64_t GO_MODE_TIMER = 2;
 
 // 搜索前可设置的全局变量，指定搜索参数
 struct SearchStruct {
@@ -45,13 +45,13 @@ struct SearchStruct {
   bool bNullMove, bKnowledge;        // 是否空着裁剪和使用局面评价知识
   bool bIdle;                        // 是否空闲
   RC4Struct rc4Random;               // 随机数
-  int nGoMode, nNodes, nCountMask;   // 搜索模式、结点数和
-  int nProperTimer, nMaxTimer;       // 计划使用时间
-  int nRandomMask, nBanMoves;        // 随机性屏蔽位和禁着数
+  int64_t nGoMode, nNodes, nCountMask;   // 搜索模式、结点数和
+  int64_t nProperTimer, nMaxTimer;       // 计划使用时间
+  int64_t nRandomMask, nBanMoves;        // 随机性屏蔽位和禁着数
   uint16_t wmvBanList[MAX_MOVE_NUM]; // 禁着列表
   char szBookFile[1024];             // 开局库
 #ifdef CCHESS_A3800
-  int mvResult;                      // 返回着法
+  int64_t mvResult;                      // 返回着法
 #endif
 };
 
@@ -68,6 +68,6 @@ void PopLeaf(PositionStruct &pos);
 #endif
 
 // 搜索的启动过程
-void SearchMain(int nDepth);
+void SearchMain(int64_t nDepth);
 
 #endif

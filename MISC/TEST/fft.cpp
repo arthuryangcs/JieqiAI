@@ -4,8 +4,8 @@
 
 static const double PI = 3.141592653589793;
 
-void MakExp(complex *lpExp, int nLen) {
-  int i, iMax, jMax;
+void MakExp(complex *lpExp, int64nLen) {
+  int64i, iMax, jMax;
   double t;
   complex z;
   lpExp[0] = complex(1.0, 0.0);
@@ -29,8 +29,8 @@ void MakExp(complex *lpExp, int nLen) {
 }
 
 // base-4 Cooley-Tukey FFT algorithm
-void Fft(complex *lpDst, const complex *lpSrc, const complex *lpExp, int nLen) {
-  int i, j, k, l;
+void Fft(complex *lpDst, const complex *lpSrc, const complex *lpExp, int64nLen) {
+  int64i, j, k, l;
   complex a, b, c, d, z;
   if (nLen == 1) {
     lpDst[0] = lpSrc[0];
@@ -72,7 +72,7 @@ void Fft(complex *lpDst, const complex *lpSrc, const complex *lpExp, int nLen) {
 }
 
 void RealFft::Exec(complex *lpDst, const double *lpSrc) {
-  int i, nLen2;
+  int64i, nLen2;
   complex z;
   if (nLen == 1) {
     lpDst[0] = complex(lpSrc[0], 0);
@@ -96,7 +96,7 @@ void RealFft::Exec(complex *lpDst, const double *lpSrc) {
 }
 
 void InvRealFft::Exec(double *lpDst, const complex *lpSrc) {
-  int i, nLen;
+  int64i, nLen;
   nLen = rf.nLen;
   for (i = 0; i < nLen; i ++) {
     lpDst[i] = lpSrc[i].re + lpSrc[i].im;

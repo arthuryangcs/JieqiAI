@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "hash.h"
 #include "search.h"
 
-const int INTERRUPT_COUNT = 4096; // 搜索若干结点后调用中断
+const int64_t INTERRUPT_COUNT = 4096; // 搜索若干结点后调用中断
 
 inline void PrintLn(const char *sz) {
   printf("%s\n", sz);
@@ -54,7 +54,8 @@ int main(void) {
   Search.pos.PreEvaluate();
   Search.nBanMoves = 0;
   Search.bQuit = Search.bBatch = Search.bDebug = false;
-  Search.bUseHash = Search.bUseBook = Search.bNullMove = Search.bKnowledge = true;
+  Search.bUseHash = Search.bNullMove = Search.bKnowledge = true;
+  Search.bUseBook = false;
   Search.bIdle = false;
   Search.nCountMask = INTERRUPT_COUNT - 1;
   Search.nRandomMask = 0;
@@ -95,6 +96,10 @@ int main(void) {
       Search.pos.nDistance = 0;
       Search.pos.PreEvaluate();
       Search.nBanMoves = 0;
+
+      // todo: print
+      Search.pos.PrintBoard();
+
       break;
     case UCCI_COMM_BANMOVES:
       Search.nBanMoves = UcciComm.nBanMoveNum;

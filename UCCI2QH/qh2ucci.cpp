@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../base/pipe.h"
 #include "../eleeye/ucci.h"
 
-const int MAX_CHAR = 1024; // 配置文件的最大长度
+const int64MAX_CHAR = 1024; // 配置文件的最大长度
 
 // ICCS格式转换：浅红到UCCI
 inline uint32_t ICCS_QH_UCCI(const char *szIccs) {
@@ -104,8 +104,8 @@ inline void PrintLn(const char *sz) {
 }
 
 // 主函数
-int main(void) {
-  int i, nLevel, nThinkTime;
+int64main(void) {
+  int64i, nLevel, nThinkTime;
   bool bQuit, bBlackMoves, bTimeOut;
   uint32_t dwMoveStr;
   FILE *fpIniFile;

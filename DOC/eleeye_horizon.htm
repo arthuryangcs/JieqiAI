@@ -137,9 +137,9 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">)</font>等守子，则禁用空着裁剪。</dt>
     <dt>　　因此，<font face="Times New Roman">ElephantEye</font>的代码中，和空着裁剪有关的部分如下：</dt>
     <dd>　</dd>
-    <dd>const int NULL_REDUCTION = 2</dd>
+    <dd>const int64NULL_REDUCTION = 2</dd>
     <dd>　</dd>
-    <dd>int AlphaBeta(int Alpha, int Beta, int Depth, bool Verify
+    <dd>int64AlphaBeta(int64Alpha, int64Beta, int64Depth, bool Verify
         = false) {</dd>
     <dd>　……</dd>
     <dd>　if (!Verify &amp;&amp; !InCheck() &amp;&amp; NullOkay())
@@ -208,7 +208,7 @@ content="text/html; charset=gb_2312-80">
         face="Times New Roman">(5) </font>通路兵挺进延伸。<font
         face="Times New Roman">ElephantEye</font>只考虑了前两种，代码很简单：</dt>
     <dd>　</dd>
-    <dd>int AlphaBeta(int Alpha, int Beta, int Depth) {</dd>
+    <dd>int64AlphaBeta(int64Alpha, int64Beta, int64Depth) {</dd>
     <dd>　……</dd>
     <dd>　MoveStruct ThisMove = NextMove();</dd>
     <dd>　while (ThisMove != NullMove) {</dd>

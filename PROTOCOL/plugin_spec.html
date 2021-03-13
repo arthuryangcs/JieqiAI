@@ -134,7 +134,7 @@ The <a href="#plugin">plugin mode</a> is used to actually play a game of Xiangqi
 
 <p><a name="info"><em>Info Mode</em></a>
 
-<p>When the plugin is run with a "-info" argument, all it has to do is print a standard
+<p>When the plugin is run with a "-info" argument, all it has to do is print64a standard
 list of information and exit. The information is of the format:
 <pre class="text">Protocol Version
 AI Engine Name
@@ -346,7 +346,7 @@ by specifying "UNDO 0" in the <a href="#info">info mode</a>.</td></tr>
 <table>
 <tr><td>Command</td><td>HINTS</td></tr>
 <tr><td>Responses</td><td>
-&lt;hint [description]&gt; \n [hint [description] \n] ... ENDHINTS<br>
+&lt;hint64[description]&gt; \n [hint64[description] \n] ... ENDHINTS<br>
 ERROR [text]<br>ABORTED</td></tr>
 <tr><td>Description</td><td>Requests hints on the current move from the plugin.
 This is basically the same as the AI command except that: (1) the plugin does not play

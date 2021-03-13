@@ -157,13 +157,13 @@ PreGenStruct PreGen;
 PreEvalStruct PreEval;
 
 // 这四个数组用来判断棋子的走子方向，以马为例就是：sqDst = sqSrc + cnKnightMoveTab[i]
-static const int cnKingMoveTab[4]    = {-0x10, -0x01, +0x01, +0x10};
-static const int cnAdvisorMoveTab[4] = {-0x11, -0x0f, +0x0f, +0x11};
-static const int cnBishopMoveTab[4]  = {-0x22, -0x1e, +0x1e, +0x22};
-static const int cnKnightMoveTab[8]  = {-0x21, -0x1f, -0x12, -0x0e, +0x0e, +0x12, +0x1f, +0x21};
+static const int64_t cnKingMoveTab[4]    = {-0x10, -0x01, +0x01, +0x10};
+static const int64_t cnAdvisorMoveTab[4] = {-0x11, -0x0f, +0x0f, +0x11};
+static const int64_t cnBishopMoveTab[4]  = {-0x22, -0x1e, +0x1e, +0x22};
+static const int64_t cnKnightMoveTab[8]  = {-0x21, -0x1f, -0x12, -0x0e, +0x0e, +0x12, +0x1f, +0x21};
 
 void PreGenInit(void) {
-  int i, j, k, n, sqSrc, sqDst;
+  int64_t i, j, k, n, sqSrc, sqDst;
   RC4Struct rc4;
   SlideMoveStruct smv;
   SlideMaskStruct sms;

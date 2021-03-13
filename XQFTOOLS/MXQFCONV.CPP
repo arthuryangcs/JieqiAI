@@ -26,12 +26,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../cchess/cchess.h"
 #include "../cchess/ecco.h"
 
-int Xqf2Pgn(const char *szXqfFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
-int Mxq2Pgn(const char *szMxqFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
-int Che2Pgn(const char *szCheFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
-int Chn2Pgn(const char *szChnFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
-int Ccm2Pgn(const char *szCcmFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
-int Pgn2Xqf(const char *szPgnFile, const char *szXqfFile);
+int64Xqf2Pgn(const char *szXqfFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
+int64Mxq2Pgn(const char *szMxqFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
+int64Che2Pgn(const char *szCheFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
+int64Chn2Pgn(const char *szChnFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
+int64Ccm2Pgn(const char *szCcmFile, const char *szPgnFile, const EccoApiStruct &EccoApi);
+int64Pgn2Xqf(const char *szPgnFile, const char *szXqfFile);
 
 #ifdef MXQFCONV_DLL
 
@@ -74,7 +74,7 @@ extern "C" __declspec(dllexport) VOID WINAPI ConvPgn2Xqf(LPCSTR szPgnFile, LPCST
 static void SearchFolder(const char *szFolderPath, const EccoApiStruct &EccoApi);
 
 static void SearchFile(const char *szFilePath, const WIN32_FIND_DATA &wfd, const EccoApiStruct &EccoApi) {
-  int nPathLen;
+  int64nPathLen;
   char szPgnFile[1024];
   if ((wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
     nPathLen = strlen(szFilePath) - 4;
@@ -134,7 +134,7 @@ static void SearchFolder(const char *szFolderPath, const EccoApiStruct &EccoApi)
   FindClose(hFind);
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int64WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int64nCmdShow) {
   char szPath[MAX_PATH], szLibEccoFile[MAX_PATH];
   EccoApiStruct EccoApi;
   BROWSEINFO bi;

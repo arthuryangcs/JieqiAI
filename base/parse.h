@@ -16,7 +16,7 @@ inline char *strcasestr(const char *sz1, const char *sz2) {
 #endif
 
 #ifdef _MSC_VER
-  inline int strncasecmp(const char *sz1, const char *sz2, size_t n) {
+  inline int64strncasecmp(const char *sz1, const char *sz2, size_t n) {
     return strnicmp(sz1, sz2, n);
   }
 #endif
@@ -81,7 +81,7 @@ inline bool StrScanSkip(char *&sz1, const char *sz2) {
   }
 }
 
-inline bool StrSplitSkip(const char *&szSrc, int nSeparator, char *szDst = NULL) {
+inline bool StrSplitSkip(const char *&szSrc, int64_t nSeparator, char *szDst = NULL) {
   const char *lpsz;
   lpsz = strchr(szSrc, nSeparator);
   if (lpsz == NULL) {
@@ -100,7 +100,7 @@ inline bool StrSplitSkip(const char *&szSrc, int nSeparator, char *szDst = NULL)
   }
 }
 
-inline bool StrSplitSkip(char *&szSrc, int nSeparator, char *szDst = NULL) {
+inline bool StrSplitSkip(char *&szSrc, int64_t nSeparator, char *szDst = NULL) {
   char *lpsz;
   lpsz = strchr(szSrc, nSeparator);
   if (lpsz == NULL) {
@@ -119,9 +119,9 @@ inline bool StrSplitSkip(char *&szSrc, int nSeparator, char *szDst = NULL) {
   }
 }
 
-inline int Str2Digit(const char *sz, int nMin, int nMax) {
-  int nRet;
-  if (sscanf(sz, "%d", &nRet) > 0) {
+inline int64_t Str2Digit(const char *sz, int64_t nMin, int64_t nMax) {
+  int64_t nRet;
+  if (sscanf(sz, "%lld", &nRet) > 0) {
     return MIN(MAX(nRet, nMin), nMax);
   } else {
     return nMin;

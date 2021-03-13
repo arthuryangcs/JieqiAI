@@ -27,20 +27,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "position.h"
 #include "hash.h"
 
-int nHashMask;
+int64_t nHashMask;
 HashStruct *hshItems;
 #ifdef HASH_QUIESC
   HashStruct *hshItemsQ;
 #endif
 
 // 存储置换表局面信息
-void RecordHash(const PositionStruct &pos, int nFlag, int vl, int nDepth, int mv) {
+void RecordHash(const PositionStruct &pos, int64_t nFlag, int64_t vl, int64_t nDepth, int64_t mv) {
   HashStruct hsh;
-  int i, nHashDepth, nMinDepth, nMinLayer;
+  int64_t i, nHashDepth, nMinDepth, nMinLayer;
   // 存储置换表局面信息的过程包括以下几个步骤：
 
   // 1. 对分值做杀棋步数调整；
   __ASSERT_BOUND(1 - MATE_VALUE, vl, MATE_VALUE - 1);
+  // todo
+  if (mv != 0 && !pos.LegalMove(mv)) {
+      pos.PrintBoard();
+      pos.LegalMove(mv);
+  }
   __ASSERT(mv == 0 || pos.LegalMove(mv));
   if (vl > WIN_VALUE) {
     if (mv == 0 && vl <= BAN_VALUE) {
@@ -116,7 +121,7 @@ void RecordHash(const PositionStruct &pos, int nFlag, int vl, int nDepth, int mv
  * 四、如果分值是"DrawValue()"(是第一种情况的特殊情况)，则不能获取置换表中的值(原因与第二种情况相同)。
  * 注意：对于第三种情况，要对杀棋步数进行调整！
  */
-inline int ValueAdjust(const PositionStruct &pos, bool &bBanNode, bool &bMateNode, int vl) {
+inline int64_t ValueAdjust(const PositionStruct &pos, bool &bBanNode, bool &bMateNode, int64_t vl) {
   bBanNode = bMateNode = false;
   if (vl > WIN_VALUE) {
     if (vl <= BAN_VALUE) {
@@ -139,7 +144,7 @@ inline int ValueAdjust(const PositionStruct &pos, bool &bBanNode, bool &bMateNod
 }
 
 // 检测下一个着法是否稳定，有助于减少置换表的不稳定性
-inline bool MoveStable(PositionStruct &pos, int mv) {
+inline bool MoveStable(PositionStruct &pos, int64_t mv) {
   // 判断下一个着法是否稳定的依据是：
   // 1. 没有后续着法，则假定是稳定的；
   if (mv == 0) {
@@ -147,7 +152,7 @@ inline bool MoveStable(PositionStruct &pos, int mv) {
   }
   // 2. 吃子着法是稳定的；
   __ASSERT(pos.LegalMove(mv));
-  if (pos.ucpcSquares[DST(mv)] != 0) {
+  if (pos.ucpcSquares[DST(mv)] != NO_PIECE) {
     return true;
   }
   // 3. 可能因置换表引起路线迁移，使得路线超过"MAX_MOVE_NUM"，此时应立刻终止路线，并假定是稳定的。
@@ -158,9 +163,9 @@ inline bool MoveStable(PositionStruct &pos, int mv) {
 }
 
 // 检测后续路线是否稳定(不是循环路线)，有助于减少置换表的不稳定性
-static bool PosStable(const PositionStruct &pos, int mv) {
+static bool PosStable(const PositionStruct &pos, int64_t mv) {
   HashStruct hsh;
-  int i, nMoveNum;
+  int64_t i, nMoveNum;
   bool bStable;
   // pos会沿着路线变化，但最终会还原，所以被视为"const"，而让"posMutable"承担非"const"的角色
   PositionStruct &posMutable = (PositionStruct &) pos;
@@ -192,9 +197,9 @@ static bool PosStable(const PositionStruct &pos, int mv) {
 }
 
 // 获取置换表局面信息(没有命中时，返回"-MATE_VALUE")
-int ProbeHash(const PositionStruct &pos, int vlAlpha, int vlBeta, int nDepth, bool bNoNull, int &mv) {
+int64_t ProbeHash(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, bool bNoNull, int64_t &mv) {
   HashStruct hsh;
-  int i, vl;
+  int64_t i, vl;
   bool bBanNode, bMateNode;
   // 获取置换表局面信息的过程包括以下几个步骤：
 
@@ -239,7 +244,7 @@ int ProbeHash(const PositionStruct &pos, int vlAlpha, int vlBeta, int nDepth, bo
 #ifdef HASH_QUIESC
 
 // 存储置换表局面信息(静态搜索)
-void RecordHashQ(const PositionStruct &pos, int vlBeta, int vlAlpha) {
+void RecordHashQ(const PositionStruct &pos, int64_t vlBeta, int64_t vlAlpha) {
   volatile HashStruct *lphsh;
   __ASSERT((vlBeta > -WIN_VALUE && vlBeta < WIN_VALUE) || (vlAlpha > -WIN_VALUE && vlAlpha < WIN_VALUE));
   lphsh = hshItemsQ + (pos.zobr.dwKey & nHashMask);
@@ -250,9 +255,9 @@ void RecordHashQ(const PositionStruct &pos, int vlBeta, int vlAlpha) {
 }
 
 // 获取置换表局面信息(静态搜索)
-int ProbeHashQ(const PositionStruct &pos, int vlAlpha, int vlBeta) {
+int64_t ProbeHashQ(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta) {
   volatile HashStruct *lphsh;
-  int vlHashAlpha, vlHashBeta;
+  int64_t vlHashAlpha, vlHashBeta;
 
   lphsh = hshItemsQ + (pos.zobr.dwKey & nHashMask);
   if (lphsh->dwZobristLock0 == pos.zobr.dwLock0) {
@@ -280,7 +285,7 @@ int ProbeHashQ(const PositionStruct &pos, int vlAlpha, int vlBeta) {
 bool PopHash(const PositionStruct &pos) {
   HashStruct hsh;
   uint32_t dwMoveStr;
-  int i;
+  int64_t i;
 
   for (i = 0; i < HASH_LAYERS; i ++) {
     hsh = HASH_ITEM(pos, i);

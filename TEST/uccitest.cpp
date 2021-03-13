@@ -25,10 +25,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../base/pipe.h"
 #include "../eleeye/position.h"
 
-const int MAX_CHAR = 1024; // 配置文件的最大长度
-const int MAX_INIT = 16;   // Init配置项最大行数
+const int64MAX_CHAR = 1024; // 配置文件的最大长度
+const int64MAX_INIT = 16;   // Init配置项最大行数
 
-inline void GetMoveNodes(int &mvTest, int &nNodes, PipeStruct &pipe) {
+inline void GetMoveNodes(int64&mvTest, int64&nNodes, PipeStruct &pipe) {
   char szLineStr[MAX_CHAR];
   char *lp;
   if (pipe.LineInput(szLineStr)) {
@@ -43,8 +43,8 @@ inline void GetMoveNodes(int &mvTest, int &nNodes, PipeStruct &pipe) {
   }
 }
 
-int main(void) {
-  int nInitNum, nTimeout;
+int64main(void) {
+  int64nInitNum, nTimeout;
   bool bNodes, bReset;
   char szIniFile[MAX_CHAR], szPosFile[MAX_CHAR], szEngineFile[MAX_CHAR];
   char szCommand[MAX_CHAR], szOutput[MAX_CHAR];
@@ -57,7 +57,7 @@ int main(void) {
 
   PipeStruct pipe;
   bool bUcciOkay;
-  int i, nHitNum, nNodes, nNodesTotal, mvBase, mvTest;
+  int64i, nHitNum, nNodes, nNodesTotal, mvBase, mvTest;
   uint32_t dwMoveBase, dwMoveTest;
   PositionStruct pos;
   int64_t llTime;

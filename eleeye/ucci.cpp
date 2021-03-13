@@ -30,7 +30,7 @@ static char szFen[LINE_INPUT_MAX_CHAR];
 static uint32_t dwCoordList[MAX_MOVE_NUM];
 
 static bool ParsePos(UcciCommStruct &UcciComm, char *lp) {
-  int i;
+  int64_t i;
   // 首先判断是否指定了FEN串
   if (StrEqvSkip(lp, "fen ")) {
     strcpy(szFen, lp);
@@ -72,7 +72,7 @@ UcciCommEnum BootLine(void) {
 UcciCommEnum IdleLine(UcciCommStruct &UcciComm, bool bDebug) {
   char szLineStr[LINE_INPUT_MAX_CHAR];
   char *lp;
-  int i;
+  int64_t i;
   bool bGoTime;
 
   while (!pipeStd.LineInput(szLineStr)) {

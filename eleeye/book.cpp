@@ -23,12 +23,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "position.h"
 #include "book.h"
 
-int GetBookMoves(const PositionStruct &pos, const char *szBookFile, BookStruct *lpbks) {
+int64_t GetBookMoves(const PositionStruct &pos, const char *szBookFile, BookStruct *lpbks) {
   BookFileStruct BookFile;
   PositionStruct posScan;
   BookStruct bk;
-  int nScan, nLow, nHigh, nPtr;
-  int i, j, nMoves;
+  int64_t nScan, nLow, nHigh, nPtr;
+  int64_t i, j, nMoves;
   // 从开局库中搜索着法的例程，有以下几个步骤：
 
   // 1. 打开开局库，如果打开失败，则返回空值；
