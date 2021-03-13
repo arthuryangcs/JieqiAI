@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include "../base/base.h"
 #include "pregen.h"
+#include "set"
 
 /* ElephantEye源程序使用的匈牙利记号约定：
 *
@@ -40,6 +41,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef POSITION_H
 #define POSITION_H
+
+using namespace std;
 
 const int64_t MAX_MOVE_NUM = 1024;  // 局面能容纳的回滚着法数
 const int64_t MAX_GEN_MOVES = 12800;  // 搜索的最大着法数，中国象棋的任何局面都不会超过120个着法
@@ -145,11 +148,13 @@ inline int64_t PIECE_INDEX(int64_t pc) {
     return pc & 31;
 }
 
-extern const char *const cszStartFen;     // 起始局面的FEN串
-extern const char *const cszPieceBytes;   // 棋子类型对应的棋子符号
-extern const int64_t cnPieceTypes[64];        // 棋子序号对应的棋子类型
-extern const int64_t cnSimpleValues[64];      // 棋子的简单分值
-extern const uint8_t cucsqMirrorTab[256]; // 坐标的镜像(左右对称)数组
+extern const char *const cszStartFen;       // 起始局面的FEN串
+extern const char *const cszPieceBytes;     // 棋子类型对应的棋子符号
+extern const int64_t cnPieceTypes[64];      // 棋子序号对应的棋子类型
+extern const int64_t cnSimpleValues[64];    // 棋子的简单分值
+extern const uint8_t cucsqMirrorTab[256];   // 坐标的镜像(左右对称)数组
+extern const uint8_t unknownPieceType[256]; // 暗棋对应棋子类型
+extern const int8_t unknownPiece[256];     // 暗棋对应棋子
 
 inline char PIECE_BYTE(int64_t pt) {
     return cszPieceBytes[pt];
@@ -170,6 +175,13 @@ inline uint8_t SQUARE_MIRROR(int64_t sq) {
     return cucsqMirrorTab[sq];
 }
 
+inline uint8_t UNKNOWN_PIECE_TYPE(int64_t sq) {
+    return unknownPieceType[sq];
+}
+inline int8_t UNKNOWN_PIECE(int64_t sq) {
+    return unknownPiece[sq];
+}
+
 // FEN串中棋子标识
 int64_t FenPiece(int64_t Arg);
 
@@ -183,6 +195,8 @@ union MoveStruct {
         uint8_t Src, Dst;      // 起始格和目标格
         int8_t Drw, ChkChs; // 被吃子(+)/和棋着法数(-)、将军子(+)/被捉子(-)
         int8_t Cpt;
+        bool openUnknown;      // 打开揭棋
+        int8_t unknownCpt;     // 揭棋被吃子
     };
 }; // mvs
 
@@ -232,6 +246,13 @@ inline int64_t MOVE_MIRROR(int64_t mv) {          // 对着法做镜像
     return MOVE(SQUARE_MIRROR(SRC(mv)), SQUARE_MIRROR(DST(mv)));
 }
 
+inline bool IS_UNKNOWN(int8_t pc) {
+    if (pc >= 32) {
+        pc -= 32;
+    }
+    return (pc >= UNKNOWN_FROM && pc <= UNKNOWN_TO);
+}
+
 // 回滚结构
 struct RollbackStruct {
     ZobristStruct zobr;   // Zobrist
@@ -244,9 +265,15 @@ const bool DEL_PIECE = true; // 函数"PositionStruct::AddPiece()"的选项
 // 局面结构
 struct PositionStruct {
 // 基本成员
-    int64_t sdPlayer;            // 轮到哪方走，0表示红方，1表示黑方
-    int8_t ucpcSquares[256];     // 每个格子放的棋子，-1表示没有棋子
-    uint8_t ucsqPieces[64];      // 每个棋子放的位置，0表示被吃
+    int64_t sdPlayer;                          // 轮到哪方走，0表示红方，1表示黑方
+    int8_t ucpcSquares[256];                   // 每个格子放的棋子，-1表示没有棋子
+    uint8_t ucsqPieces[64];                    // 每个棋子放的位置，0表示被吃
+    int64_t unknownEatCount[2];                // 每方被吃的暗棋数量
+    set<int64_t> unknownEatPieces[2];          // 每方吃的暗棋
+    set<int64_t> unknownPieces[2];             // 每方可能的暗棋
+    set<int64_t> unknownOppositePieces[2];     // 每方对方可能的暗棋
+    RC4Struct rc4Random;                       // 随机数
+
     ZobristStruct zobr;          // Zobrist
 
 // 位结构成员，用来增强棋盘的处理
@@ -261,7 +288,7 @@ struct PositionStruct {
     int64_t vlWhite, vlBlack;   // 红方和黑方的子力价值
 
 // 回滚着法，用来检测循环局面
-    int64_t nMoveNum, nDistance;              // 回滚着法数和搜索深度
+    int64_t nMoveNum, nDistance;          // 回滚着法数和搜索深度
     RollbackStruct rbsList[MAX_MOVE_NUM]; // 回滚列表
     uint8_t ucRepHash[REP_HASH_MASK + 1]; // 判断重复局面的迷你置换表
 
@@ -283,7 +310,7 @@ struct PositionStruct {
     }
 
 // 棋盘处理过程
-    void ClearBoard(void) { // 棋盘初始化
+    void ClearBoard() { // 棋盘初始化
         sdPlayer = 0;
         memset(ucpcSquares, -1, 256);
         memset(ucsqPieces, 0, 64);
@@ -292,6 +319,14 @@ struct PositionStruct {
         memset(wBitRanks, 0, 16 * sizeof(uint16_t));
         memset(wBitFiles, 0, 16 * sizeof(uint16_t));
         vlWhite = vlBlack = 0;
+        unknownPieces[0].clear();
+        unknownPieces[1].clear();
+        unknownEatPieces[0].clear();
+        unknownEatPieces[1].clear();
+        unknownOppositePieces[0].clear();
+        unknownOppositePieces[1].clear();
+        unknownEatCount[0] = unknownEatCount[1] = 0;
+        rc4Random.InitRand();
 // "ClearBoard()"后面紧跟的是"SetIrrev()"，来初始化其它成员
     }
 
@@ -317,8 +352,8 @@ struct PositionStruct {
     }
 
     void AddPiece(int64_t sq, int64_t pc, bool bDel = false); // 棋盘上增加棋子
-    int64_t MovePiece(int64_t mv);                            // 移动棋子
-    void UndoMovePiece(int64_t mv, int64_t pcCaptured);       // 撤消移动棋子
+    tuple<int64_t, bool, int64_t> MovePiece(int64_t mv);                            // 移动棋子
+    void UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknown, int64_t unknownCap);       // 撤消移动棋子
     int64_t Promote(int64_t sq);                              // 升变
     void UndoPromote(int64_t sq, int64_t pcCaptured);         // 撤消升变
 

@@ -246,6 +246,33 @@ int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
         }
     }
 
+    // 2. 生成仕(士)的着法，揭棋
+    for (i = ADVISOR_FROM + 15; i <= ADVISOR_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 仕(士)的价值是1
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+            }
+            if (bCanPromote && CAN_PROMOTE(sqSrc)) {
+                lpmvsCurr->wmv = MOVE(sqSrc, sqSrc);
+                lpmvsCurr->wvl = 0;
+                lpmvsCurr++;
+            }
+        }
+    }
+
     // 3. 生成相(象)的着法
     for (i = BISHOP_FROM; i <= BISHOP_TO; i++) {
         sqSrc = ucsqPieces[nSideTag + i];
@@ -259,9 +286,43 @@ int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
                 if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
                     pcCaptured = ucpcSquares[sqDst];
                     if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-                        if (!LegalMove(MOVE(sqSrc, sqDst))) {
-                            LegalMove(MOVE(sqSrc, sqDst));
-                        }
+//                        if (!LegalMove(MOVE(sqSrc, sqDst))) {
+//                            LegalMove(MOVE(sqSrc, sqDst));
+//                        }
+                        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                        lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                        lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 相(象)的价值是1
+                        lpmvsCurr++;
+                    }
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
+            if (bCanPromote && CAN_PROMOTE(sqSrc)) {
+                lpmvsCurr->wmv = MOVE(sqSrc, sqSrc);
+                lpmvsCurr->wvl = 0;
+                lpmvsCurr++;
+            }
+        }
+    }
+
+    // 3. 生成相(象)的着法，揭棋
+    for (i = BISHOP_FROM + 15; i <= BISHOP_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqBishopMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqBishopPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
+                    pcCaptured = ucpcSquares[sqDst];
+                    if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+//                        if (!LegalMove(MOVE(sqSrc, sqDst))) {
+//                            LegalMove(MOVE(sqSrc, sqDst));
+//                        }
                         __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
                         lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
                         lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 相(象)的价值是1
@@ -306,8 +367,92 @@ int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
         }
     }
 
+    // 4. 生成马的着法，揭棋
+    for (i = KNIGHT_FROM + 15; i <= KNIGHT_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
+                    pcCaptured = ucpcSquares[sqDst];
+                    if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                        lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                        lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 马的价值是3
+                        lpmvsCurr++;
+                    }
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
+        }
+    }
+
     // 5. 生成车的着法
     for (i = ROOK_FROM; i <= ROOK_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+
+            lpsmv = RankMovePtr(x, y);
+            sqDst = lpsmv->ucRookCap[0] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucRookCap[1] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+
+            lpsmv = FileMovePtr(x, y);
+            sqDst = lpsmv->ucRookCap[0] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucRookCap[1] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+        }
+    }
+
+    // 5. 生成车的着法，揭棋
+    for (i = ROOK_FROM + 15; i <= ROOK_TO + 15; i++) {
         sqSrc = ucsqPieces[nSideTag + i];
         if (sqSrc != 0) {
             __ASSERT_SQUARE(sqSrc);
@@ -402,9 +547,9 @@ int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
             if (sqDst != sqSrc) {
                 pcCaptured = ucpcSquares[sqDst];
                 if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-                    if (!LegalMove(MOVE(sqSrc, sqDst))) {
-                        LegalMove(MOVE(sqSrc, sqDst));
-                    }
+//                    if (!LegalMove(MOVE(sqSrc, sqDst))) {
+//                        LegalMove(MOVE(sqSrc, sqDst));
+//                    }
                     __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
                     lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
                     lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
@@ -416,6 +561,75 @@ int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
             if (sqDst != sqSrc) {
                 pcCaptured = ucpcSquares[sqDst];
                 if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    // todo
+                    if (!LegalMove(MOVE(sqSrc, sqDst))) {
+                        LegalMove(MOVE(sqSrc, sqDst));
+                    }
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+        }
+    }
+
+    // 6. 生成炮的着法，揭棋
+    for (i = CANNON_FROM + 15; i <= CANNON_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+
+            lpsmv = RankMovePtr(x, y);
+            sqDst = lpsmv->ucCannonCap[0] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucCannonCap[1] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+
+            lpsmv = FileMovePtr(x, y);
+            sqDst = lpsmv->ucCannonCap[0] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+//                    if (!LegalMove(MOVE(sqSrc, sqDst))) {
+//                        LegalMove(MOVE(sqSrc, sqDst));
+//                    }
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucCannonCap[1] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    // todo
+                    if (!LegalMove(MOVE(sqSrc, sqDst))) {
+                        LegalMove(MOVE(sqSrc, sqDst));
+                    }
                     __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
                     lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
                     lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
@@ -446,6 +660,29 @@ int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
             }
         }
     }
+
+    // 7. 生成兵(卒)的着法，揭棋
+    for (i = PAWN_FROM + 15; i <= PAWN_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqPawnMoves[sdPlayer][sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 2); // 兵(卒)的价值是2
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+            }
+        }
+    }
+
     return lpmvsCurr - lpmvs;
 }
 
@@ -499,6 +736,26 @@ int64_t PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
         }
     }
 
+    // 2. 生成仕(士)的着法，揭棋
+    for (i = 15 + ADVISOR_FROM; i <= 15 + ADVISOR_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+            }
+        }
+    }
+
     // 3. 生成相(象)的着法
     for (i = BISHOP_FROM; i <= BISHOP_TO; i++) {
         sqSrc = ucsqPieces[nSideTag + i];
@@ -521,8 +778,52 @@ int64_t PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
         }
     }
 
+    // 3. 生成相(象)的着法，揭棋
+    for (i = BISHOP_FROM + 15; i <= BISHOP_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqBishopMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqBishopPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
+        }
+    }
+
     // 4. 生成马的着法
     for (i = KNIGHT_FROM; i <= KNIGHT_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
+        }
+    }
+
+    // 4. 生成马的着法，揭棋
+    for (i = KNIGHT_FROM + 15; i <= KNIGHT_TO + 15; i++) {
         sqSrc = ucsqPieces[nSideTag + i];
         if (sqSrc != 0) {
             __ASSERT_SQUARE(sqSrc);
@@ -585,9 +886,62 @@ int64_t PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
             __ASSERT_SQUARE(sqDst);
             while (sqDst != sqSrc) {
                 __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
-                if (!LegalMove(MOVE(sqSrc, sqDst))) {
-                    LegalMove(MOVE(sqSrc, sqDst));
-                }
+//                if (!LegalMove(MOVE(sqSrc, sqDst))) {
+//                    LegalMove(MOVE(sqSrc, sqDst));
+//                }
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst += 16;
+            }
+        }
+    }
+
+    // 5. 生成车和炮的着法，没有必要判断是否吃到本方棋子，揭棋
+    for (i = ROOK_FROM + 15; i <= CANNON_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+
+            lpsmv = RankMovePtr(x, y);
+            sqDst = lpsmv->ucNonCap[0] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst--;
+            }
+            sqDst = lpsmv->ucNonCap[1] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst++;
+            }
+
+            lpsmv = FileMovePtr(x, y);
+            sqDst = lpsmv->ucNonCap[0] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst -= 16;
+            }
+            sqDst = lpsmv->ucNonCap[1] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+//                if (!LegalMove(MOVE(sqSrc, sqDst))) {
+//                    LegalMove(MOVE(sqSrc, sqDst));
+//                }
                 __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
                 lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
                 lpmvsCurr++;
@@ -615,6 +969,27 @@ int64_t PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
             }
         }
     }
+
+    // 6. 生成兵(卒)的着法，揭棋
+    for (i = PAWN_FROM + 15; i <= PAWN_TO + 15; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqPawnMoves[sdPlayer][sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+            }
+        }
+    }
+
     return lpmvsCurr - lpmvs;
 }
 
@@ -630,7 +1005,7 @@ int64_t PositionStruct::ChasedBy(int64_t mv) const {
     nSideTag = SIDE_TAG(this->sdPlayer);
     __ASSERT_SQUARE(sqSrc);
     __ASSERT_PIECE(pcMoved);
-    __ASSERT_BOUND(0, pcMoved - OPP_SIDE_TAG(this->sdPlayer), 31);
+    __ASSERT_BOUND(0, pcMoved - OPP_SIDE_TAG(this->sdPlayer), 64);
 
     // “捉”的判断包括以下几部分内容：
     switch (pcMoved - OPP_SIDE_TAG(this->sdPlayer)) {
@@ -692,7 +1067,7 @@ int64_t PositionStruct::ChasedBy(int64_t mv) const {
                         pcCaptured = this->ucpcSquares[sqDst];
                         if ((pcCaptured & nSideTag) != 0) {
                             pcCaptured -= nSideTag;
-                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            __ASSERT_BOUND(0, pcCaptured, 30);
                             // 技巧：优化兵种判断的分枝
                             if (pcCaptured <= ROOK_TO) {
                                 // 车捉仕(士)、相(象)的情况不予考虑
@@ -731,7 +1106,7 @@ int64_t PositionStruct::ChasedBy(int64_t mv) const {
                         pcCaptured = this->ucpcSquares[sqDst];
                         if ((pcCaptured & nSideTag) != 0) {
                             pcCaptured -= nSideTag;
-                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            __ASSERT_BOUND(0, pcCaptured, 30);
                             // 技巧：优化兵种判断的分枝
                             if (pcCaptured <= ROOK_TO) {
                                 // 车捉仕(士)、相(象)的情况不予考虑
@@ -778,7 +1153,7 @@ int64_t PositionStruct::ChasedBy(int64_t mv) const {
                         pcCaptured = this->ucpcSquares[sqDst];
                         if ((pcCaptured & nSideTag) != 0) {
                             pcCaptured -= nSideTag;
-                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            __ASSERT_BOUND(0, pcCaptured, 30);
                             // 技巧：优化兵种判断的分枝
                             if (pcCaptured <= ROOK_TO) {
                                 // 炮捉仕(士)、相(象)的情况不予考虑
@@ -815,7 +1190,7 @@ int64_t PositionStruct::ChasedBy(int64_t mv) const {
                         pcCaptured = this->ucpcSquares[sqDst];
                         if ((pcCaptured & nSideTag) != 0) {
                             pcCaptured -= nSideTag;
-                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            __ASSERT_BOUND(0, pcCaptured, 30);
                             // 技巧：优化兵种判断的分枝
                             if (pcCaptured <= ROOK_TO) {
                                 // 炮捉仕(士)、相(象)的情况不予考虑

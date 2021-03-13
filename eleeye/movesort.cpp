@@ -49,7 +49,7 @@ void MoveSortStruct::SetHistory(void) {
 // Shell排序法，这里用"1, 4, 13, 40 ..."的序列，这样要比"1, 2, 4, 8, ..."好
 static const int64_t cnShellStep[8] = {0, 1, 4, 13, 40, 121, 364, 1093};
 
-void MoveSortStruct::ShellSort(void) {
+void MoveSortStruct::ShellSort() {
     int64_t i, j, nStep, nStepLevel;
     MoveStruct mvsBest;
     nStepLevel = 1;
@@ -118,13 +118,14 @@ int64_t MoveSortStruct::NextFull(const PositionStruct &pos) {
         // 0. 置换表着法启发，完成后立即进入下一阶段；
         case PHASE_HASH:
             nPhase = PHASE_GEN_CAP;
-            if (mvHash != 0) {
-                __ASSERT(pos.LegalMove(mvHash));
-                return mvHash;
-            }
-            // 技巧：这里没有"break"，表示"switch"的上一个"case"执行完后紧接着做下一个"case"，下同
-
-            // 1. 生成所有吃子着法，完成后立即进入下一阶段；
+            // todo:
+//            if (mvHash != 0) {
+//                __ASSERT(pos.LegalMove(mvHash));
+//                return mvHash;
+//            }
+//            // 技巧：这里没有"break"，表示"switch"的上一个"case"执行完后紧接着做下一个"case"，下同
+//
+//            // 1. 生成所有吃子着法，完成后立即进入下一阶段；
         case PHASE_GEN_CAP:
             nPhase = PHASE_GOODCAP;
             nMoveIndex = 0;
@@ -141,19 +142,19 @@ int64_t MoveSortStruct::NextFull(const PositionStruct &pos) {
             }
 
             // 3. 杀手着法启发(第一个杀手着法)，完成后立即进入下一阶段；
-        case PHASE_KILLER1:
-            nPhase = PHASE_KILLER2;
-            if (mvKiller1 != 0 && pos.LegalMove(mvKiller1)) {
-                // 注意：杀手着法必须检验着法合理性，下同
-                return mvKiller1;
-            }
-
-            // 4. 杀手着法启发(第二个杀手着法)，完成后立即进入下一阶段；
-        case PHASE_KILLER2:
-            nPhase = PHASE_GEN_NONCAP;
-            if (mvKiller2 != 0 && pos.LegalMove(mvKiller2)) {
-                return mvKiller2;
-            }
+//        case PHASE_KILLER1:
+//            nPhase = PHASE_KILLER2;
+//            if (mvKiller1 != 0 && pos.LegalMove(mvKiller1)) {
+//                // 注意：杀手着法必须检验着法合理性，下同
+//                return mvKiller1;
+//            }
+//
+//            // 4. 杀手着法启发(第二个杀手着法)，完成后立即进入下一阶段；
+//        case PHASE_KILLER2:
+//            nPhase = PHASE_GEN_NONCAP;
+//            if (mvKiller2 != 0 && pos.LegalMove(mvKiller2)) {
+//                return mvKiller2;
+//            }
 
             // 5. 生成所有不吃子着法，完成后立即进入下一阶段；
         case PHASE_GEN_NONCAP:

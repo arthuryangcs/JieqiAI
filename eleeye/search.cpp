@@ -348,11 +348,12 @@ static int64_t SearchCut(int64_t vlBeta, int64_t nDepth, bool bNoNull = false) {
         return vl;
     }
 
-    // 3. 置换裁剪；
-    vl = ProbeHash(Search.pos, vlBeta - 1, vlBeta, nDepth, bNoNull, mvHash);
-    if (Search.bUseHash && vl > -MATE_VALUE) {
-        return vl;
-    }
+// todo
+//    // 3. 置换裁剪；
+//    vl = ProbeHash(Search.pos, vlBeta - 1, vlBeta, nDepth, bNoNull, mvHash);
+//    if (Search.bUseHash && vl > -MATE_VALUE) {
+//        return vl;
+//    }
 
     // 4. 达到极限深度，直接返回评价值；
     if (Search.pos.nDistance == LIMIT_DEPTH) {
@@ -478,12 +479,13 @@ static int64_t SearchPV(int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, uint16_
         return vl;
     }
 
-    // 3. 置换裁剪；
-    vl = ProbeHash(Search.pos, vlAlpha, vlBeta, nDepth, NO_NULL, mvHash);
-    if (Search.bUseHash && vl > -MATE_VALUE) {
-        // 由于PV结点不适用置换裁剪，所以不会发生PV路线中断的情况
-        return vl;
-    }
+// todo
+//    // 3. 置换裁剪；
+//    vl = ProbeHash(Search.pos, vlAlpha, vlBeta, nDepth, NO_NULL, mvHash);
+//    if (Search.bUseHash && vl > -MATE_VALUE) {
+//        // 由于PV结点不适用置换裁剪，所以不会发生PV路线中断的情况
+//        return vl;
+//    }
 
     // 4. 达到极限深度，直接返回评价值；
     __ASSERT(Search.pos.nDistance > 0);
