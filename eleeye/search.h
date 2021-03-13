@@ -22,9 +22,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../base/base.h"
 #include "../base/rc4prng.h"
+
 #ifndef CCHESS_A3800
-  #include "ucci.h"
+
+#include "ucci.h"
+
 #endif
+
 #include "pregen.h"
 #include "position.h"
 
@@ -38,20 +42,20 @@ const int64_t GO_MODE_TIMER = 2;
 
 // 搜索前可设置的全局变量，指定搜索参数
 struct SearchStruct {
-  PositionStruct pos;                // 有待搜索的局面
-  bool bQuit, bPonder, bDraw;        // 是否收到退出指令、后台思考模式和提和模式
-  bool bBatch, bDebug;               // 是否批处理模式和调试模式
-  bool bUseHash, bUseBook;           // 是否使用置换表裁剪和开局库
-  bool bNullMove, bKnowledge;        // 是否空着裁剪和使用局面评价知识
-  bool bIdle;                        // 是否空闲
-  RC4Struct rc4Random;               // 随机数
-  int64_t nGoMode, nNodes, nCountMask;   // 搜索模式、结点数和
-  int64_t nProperTimer, nMaxTimer;       // 计划使用时间
-  int64_t nRandomMask, nBanMoves;        // 随机性屏蔽位和禁着数
-  uint16_t wmvBanList[MAX_MOVE_NUM]; // 禁着列表
-  char szBookFile[1024];             // 开局库
+    PositionStruct pos;                // 有待搜索的局面
+    bool bQuit, bPonder, bDraw;        // 是否收到退出指令、后台思考模式和提和模式
+    bool bBatch, bDebug;               // 是否批处理模式和调试模式
+    bool bUseHash, bUseBook;           // 是否使用置换表裁剪和开局库
+    bool bNullMove, bKnowledge;        // 是否空着裁剪和使用局面评价知识
+    bool bIdle;                        // 是否空闲
+    RC4Struct rc4Random;               // 随机数
+    int64_t nGoMode, nNodes, nCountMask;   // 搜索模式、结点数和
+    int64_t nProperTimer, nMaxTimer;       // 计划使用时间
+    int64_t nRandomMask, nBanMoves;        // 随机性屏蔽位和禁着数
+    uint16_t wmvBanList[MAX_MOVE_NUM]; // 禁着列表
+    char szBookFile[1024];             // 开局库
 #ifdef CCHESS_A3800
-  int64_t mvResult;                      // 返回着法
+    int64_t mvResult;                      // 返回着法
 #endif
 };
 

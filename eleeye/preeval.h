@@ -25,10 +25,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 // 扩展的局面预评价结构
 extern struct PreEvalStructEx {
-  int64_t vlBlackAdvisorLeakage, vlWhiteAdvisorLeakage;
-  int64_t vlHollowThreat[16], vlCentralThreat[16];
-  int64_t vlWhiteBottomThreat[16], vlBlackBottomThreat[16];
-  char cPopCnt16[65536]; // 加速PopCnt16的数组，只需要初始化一次
+    int64_t vlBlackAdvisorLeakage, vlWhiteAdvisorLeakage;
+    int64_t vlHollowThreat[16], vlCentralThreat[16];
+    int64_t vlWhiteBottomThreat[16], vlBlackBottomThreat[16];
+    char cPopCnt16[65536]; // 加速PopCnt16的数组，只需要初始化一次
 } PreEvalEx;
 
 #endif

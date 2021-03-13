@@ -42,122 +42,122 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 // 棋子保护判断
 bool PositionStruct::Protected(int64_t sd, int64_t sqSrc, int64_t sqExcept) const {
-  // 参数"sqExcept"表示排除保护的棋子(指格子编号)，考虑被牵制子的保护时，需要排除牵制目标子的保护
-  int64_t i, sqDst, sqPin, pc, x, y, nSideTag;
-  SlideMaskStruct *lpsmsRank, *lpsmsFile;
-  // 棋子保护判断包括以下几个步骤：
+    // 参数"sqExcept"表示排除保护的棋子(指格子编号)，考虑被牵制子的保护时，需要排除牵制目标子的保护
+    int64_t i, sqDst, sqPin, pc, x, y, nSideTag;
+    SlideMaskStruct *lpsmsRank, *lpsmsFile;
+    // 棋子保护判断包括以下几个步骤：
 
-  __ASSERT_SQUARE(sqSrc);
-  nSideTag = SIDE_TAG(sd);
-  if (HOME_HALF(sqSrc, sd)) {
-    if (IN_FORT(sqSrc)) {
+    __ASSERT_SQUARE(sqSrc);
+    nSideTag = SIDE_TAG(sd);
+    if (HOME_HALF(sqSrc, sd)) {
+        if (IN_FORT(sqSrc)) {
 
-      // 1. 判断受到帅(将)的保护
-      sqDst = ucsqPieces[nSideTag + KING_FROM];
-      if (sqDst != 0 && sqDst != sqExcept) {
-        __ASSERT_SQUARE(sqDst);
-        if (KING_SPAN(sqSrc, sqDst)) {
-          return true;
+            // 1. 判断受到帅(将)的保护
+            sqDst = ucsqPieces[nSideTag + KING_FROM];
+            if (sqDst != 0 && sqDst != sqExcept) {
+                __ASSERT_SQUARE(sqDst);
+                if (KING_SPAN(sqSrc, sqDst)) {
+                    return true;
+                }
+            }
+
+            // 2. 判断受到仕(士)的保护
+            for (i = ADVISOR_FROM; i <= ADVISOR_TO; i++) {
+                sqDst = ucsqPieces[nSideTag + i];
+                if (sqDst != 0 && sqDst != sqExcept) {
+                    __ASSERT_SQUARE(sqDst);
+                    if (ADVISOR_SPAN(sqSrc, sqDst)) {
+                        return true;
+                    }
+                }
+            }
         }
-      }
 
-      // 2. 判断受到仕(士)的保护
-      for (i = ADVISOR_FROM; i <= ADVISOR_TO; i ++) {
-        sqDst = ucsqPieces[nSideTag + i];
-        if (sqDst != 0 && sqDst != sqExcept) {
-          __ASSERT_SQUARE(sqDst);
-          if (ADVISOR_SPAN(sqSrc, sqDst)) {
-            return true;
-          }
+        // 3. 判断受到相(象)的保护
+        for (i = BISHOP_FROM; i <= BISHOP_TO; i++) {
+            sqDst = ucsqPieces[nSideTag + i];
+            if (sqDst != 0 && sqDst != sqExcept) {
+                __ASSERT_SQUARE(sqDst);
+                if (BISHOP_SPAN(sqSrc, sqDst) && ucpcSquares[BISHOP_PIN(sqSrc, sqDst)] == NO_PIECE) {
+                    return true;
+                }
+            }
         }
-      }
+    } else {
+
+        // 4. 判断受到过河兵(卒)横向的保护
+        for (sqDst = sqSrc - 1; sqDst <= sqSrc + 1; sqDst += 2) {
+            // 如果棋子在边线，那么断言不成立
+            // __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqExcept) {
+                pc = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pc, nSideTag) && PIECE_INDEX(pc) >= PAWN_FROM) {
+                    return true;
+                }
+            }
+        }
     }
 
-    // 3. 判断受到相(象)的保护
-    for (i = BISHOP_FROM; i <= BISHOP_TO; i ++) {
-      sqDst = ucsqPieces[nSideTag + i];
-      if (sqDst != 0 && sqDst != sqExcept) {
-        __ASSERT_SQUARE(sqDst);
-        if (BISHOP_SPAN(sqSrc, sqDst) && ucpcSquares[BISHOP_PIN(sqSrc, sqDst)] == NO_PIECE) {
-          return true;
-        }
-      }
-    }
-  } else {
-
-    // 4. 判断受到过河兵(卒)横向的保护
-    for (sqDst = sqSrc - 1; sqDst <= sqSrc + 1; sqDst += 2) {
-      // 如果棋子在边线，那么断言不成立
-      // __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqExcept) {
+    // 5. 判断受到兵(卒)纵向的保护
+    sqDst = SQUARE_BACKWARD(sqSrc, sd);
+    // 如果棋子在底线，那么断言不成立
+    // __ASSERT_SQUARE(sqDst);
+    if (sqDst != sqExcept) {
         pc = ucpcSquares[sqDst];
         if (IS_SAME_SIDE(pc, nSideTag) && PIECE_INDEX(pc) >= PAWN_FROM) {
-          return true;
+            return true;
         }
-      }
     }
-  }
 
-  // 5. 判断受到兵(卒)纵向的保护
-  sqDst = SQUARE_BACKWARD(sqSrc, sd);
-  // 如果棋子在底线，那么断言不成立
-  // __ASSERT_SQUARE(sqDst);
-  if (sqDst != sqExcept) {
-    pc = ucpcSquares[sqDst];
-    if (IS_SAME_SIDE(pc, nSideTag) && PIECE_INDEX(pc) >= PAWN_FROM) {
-      return true;
-    }
-  }
-
-  // 6. 判断受到马的保护
-  for (i = KNIGHT_FROM; i <= KNIGHT_TO; i ++) {
-    sqDst = ucsqPieces[nSideTag + i];
-    if (sqDst != 0 && sqDst != sqExcept) {
-      __ASSERT_SQUARE(sqDst);
-      sqPin = KNIGHT_PIN(sqDst, sqSrc); // 注意，sqSrc和sqDst是反的！
-      if (sqPin != sqDst && ucpcSquares[sqPin] == NO_PIECE) {
-        return true;
-      }
-    }
-  }
-
-  x = FILE_X(sqSrc);
-  y = RANK_Y(sqSrc);
-  lpsmsRank = RankMaskPtr(x, y);
-  lpsmsFile = FileMaskPtr(x, y);
-
-  // 7. 判断受到车的保护，参阅"position.cpp"里的"CheckedBy()"函数
-  for (i = ROOK_FROM; i <= ROOK_TO; i ++) {
-    sqDst = ucsqPieces[nSideTag + i];
-    if (sqDst != 0 && sqDst != sqSrc && sqDst != sqExcept) {
-      if (x == FILE_X(sqDst)) {
-        if ((lpsmsFile->wRookCap & PreGen.wBitFileMask[sqDst]) != 0) {
-          return true;
+    // 6. 判断受到马的保护
+    for (i = KNIGHT_FROM; i <= KNIGHT_TO; i++) {
+        sqDst = ucsqPieces[nSideTag + i];
+        if (sqDst != 0 && sqDst != sqExcept) {
+            __ASSERT_SQUARE(sqDst);
+            sqPin = KNIGHT_PIN(sqDst, sqSrc); // 注意，sqSrc和sqDst是反的！
+            if (sqPin != sqDst && ucpcSquares[sqPin] == NO_PIECE) {
+                return true;
+            }
         }
-      } else if (y == RANK_Y(sqDst)) {
-        if ((lpsmsRank->wRookCap & PreGen.wBitRankMask[sqDst]) != 0) {
-          return true;
-        }
-      }
     }
-  }
 
-  // 8. 判断受到炮的保护，参阅"position.cpp"里的"CheckedBy()"函数
-  for (i = CANNON_FROM; i <= CANNON_TO; i ++) {
-    sqDst = ucsqPieces[nSideTag + i];
-    if (sqDst && sqDst != sqSrc && sqDst != sqExcept) {
-      if (x == FILE_X(sqDst)) {
-        if ((lpsmsFile->wCannonCap & PreGen.wBitFileMask[sqDst]) != 0) {
-          return true;
+    x = FILE_X(sqSrc);
+    y = RANK_Y(sqSrc);
+    lpsmsRank = RankMaskPtr(x, y);
+    lpsmsFile = FileMaskPtr(x, y);
+
+    // 7. 判断受到车的保护，参阅"position.cpp"里的"CheckedBy()"函数
+    for (i = ROOK_FROM; i <= ROOK_TO; i++) {
+        sqDst = ucsqPieces[nSideTag + i];
+        if (sqDst != 0 && sqDst != sqSrc && sqDst != sqExcept) {
+            if (x == FILE_X(sqDst)) {
+                if ((lpsmsFile->wRookCap & PreGen.wBitFileMask[sqDst]) != 0) {
+                    return true;
+                }
+            } else if (y == RANK_Y(sqDst)) {
+                if ((lpsmsRank->wRookCap & PreGen.wBitRankMask[sqDst]) != 0) {
+                    return true;
+                }
+            }
         }
-      } else if (y == RANK_Y(sqDst)) {
-        if ((lpsmsRank->wCannonCap & PreGen.wBitRankMask[sqDst]) != 0) {
-          return true;
-        }
-      }
     }
-  }
-  return false;
+
+    // 8. 判断受到炮的保护，参阅"position.cpp"里的"CheckedBy()"函数
+    for (i = CANNON_FROM; i <= CANNON_TO; i++) {
+        sqDst = ucsqPieces[nSideTag + i];
+        if (sqDst && sqDst != sqSrc && sqDst != sqExcept) {
+            if (x == FILE_X(sqDst)) {
+                if ((lpsmsFile->wCannonCap & PreGen.wBitFileMask[sqDst]) != 0) {
+                    return true;
+                }
+            } else if (y == RANK_Y(sqDst)) {
+                if ((lpsmsRank->wCannonCap & PreGen.wBitRankMask[sqDst]) != 0) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 /* 计算MVV(LVA)值的函数
@@ -172,679 +172,679 @@ bool PositionStruct::Protected(int64_t sd, int64_t sqSrc, int64_t sqExcept) cons
  * LVA价值直接体现在吃子着法生成器中。
  */
 int64_t PositionStruct::MvvLva(int64_t sqDst, int64_t pcCaptured, int64_t nLva) const {
-  int64_t nMvv, nLvaAdjust;
-  nMvv = SIMPLE_VALUE(pcCaptured);
-  nLvaAdjust = (Protected(OPP_SIDE(sdPlayer), sqDst) ? nLva : 0);
-  if (nMvv >= nLvaAdjust) {
-    return nMvv - nLvaAdjust + 1;
-  } else {
-    return (nMvv >= 3 || HOME_HALF(sqDst, sdPlayer)) ? 1 : 0;
-  }
+    int64_t nMvv, nLvaAdjust;
+    nMvv = SIMPLE_VALUE(pcCaptured);
+    nLvaAdjust = (Protected(OPP_SIDE(sdPlayer), sqDst) ? nLva : 0);
+    if (nMvv >= nLvaAdjust) {
+        return nMvv - nLvaAdjust + 1;
+    } else {
+        return (nMvv >= 3 || HOME_HALF(sqDst, sdPlayer)) ? 1 : 0;
+    }
 }
 
 // 吃子着法生成器，按MVV(LVA)设定分值
 int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
-  int64_t i, sqSrc, sqDst, pcCaptured;
-  int64_t x, y, nSideTag, nOppSideTag;
-  bool bCanPromote;
-  SlideMoveStruct *lpsmv;
-  uint8_t *lpucsqDst, *lpucsqPin;
-  MoveStruct *lpmvsCurr;
-  // 生成吃子着法的过程包括以下几个步骤：
+    int64_t i, sqSrc, sqDst, pcCaptured;
+    int64_t x, y, nSideTag, nOppSideTag;
+    bool bCanPromote;
+    SlideMoveStruct *lpsmv;
+    uint8_t *lpucsqDst, *lpucsqPin;
+    MoveStruct *lpmvsCurr;
+    // 生成吃子着法的过程包括以下几个步骤：
 
-  lpmvsCurr = lpmvs;
-  nSideTag = SIDE_TAG(sdPlayer);
-  nOppSideTag = OPP_SIDE_TAG(sdPlayer);
-  bCanPromote = PreEval.bPromotion && CanPromote();
+    lpmvsCurr = lpmvs;
+    nSideTag = SIDE_TAG(sdPlayer);
+    nOppSideTag = OPP_SIDE_TAG(sdPlayer);
+    bCanPromote = PreEval.bPromotion && CanPromote();
 
-  // 1. 生成帅(将)的着法
-  sqSrc = ucsqPieces[nSideTag + KING_FROM];
-  if (sqSrc != 0) {
-    __ASSERT_SQUARE(sqSrc);
-    lpucsqDst = PreGen.ucsqKingMoves[sqSrc];
-    sqDst = *lpucsqDst;
-    while (sqDst != 0) {
-      __ASSERT_SQUARE(sqDst);
-      // 找到一个着法后，首先判断吃到的棋子是否是对方棋子，技巧是利用"nOppSideTag"的标志(16和32颠倒)，
-      // 如果是对方棋子，则保存MVV(LVA)值，即如果被吃子无保护，则只记MVV，否则记MVV-LVA(如果MVV>LVA的话)。
-      pcCaptured = ucpcSquares[sqDst];
-      if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-        lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-        lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 5); // 帅(将)的价值是5
-        lpmvsCurr ++;
-      }
-      lpucsqDst ++;
-      sqDst = *lpucsqDst;
-    }
-  }
-
-  // 2. 生成仕(士)的着法
-  for (i = ADVISOR_FROM; i <= ADVISOR_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
+    // 1. 生成帅(将)的着法
+    sqSrc = ucsqPieces[nSideTag + KING_FROM];
     if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 仕(士)的价值是1
-          lpmvsCurr ++;
-        }
-        lpucsqDst ++;
+        __ASSERT_SQUARE(sqSrc);
+        lpucsqDst = PreGen.ucsqKingMoves[sqSrc];
         sqDst = *lpucsqDst;
-      }
-      if (bCanPromote && CAN_PROMOTE(sqSrc)) {
-        lpmvsCurr->wmv = MOVE(sqSrc, sqSrc);
-        lpmvsCurr->wvl = 0;
-        lpmvsCurr ++;
-      }
-    }
-  }
-
-  // 3. 生成相(象)的着法
-  for (i = BISHOP_FROM; i <= BISHOP_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqBishopMoves[sqSrc];
-      lpucsqPin = PreGen.ucsqBishopPins[sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
-          pcCaptured = ucpcSquares[sqDst];
-          if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-            if (!LegalMove(MOVE(sqSrc, sqDst))) {
-                LegalMove(MOVE(sqSrc, sqDst));
+        while (sqDst != 0) {
+            __ASSERT_SQUARE(sqDst);
+            // 找到一个着法后，首先判断吃到的棋子是否是对方棋子，技巧是利用"nOppSideTag"的标志(16和32颠倒)，
+            // 如果是对方棋子，则保存MVV(LVA)值，即如果被吃子无保护，则只记MVV，否则记MVV-LVA(如果MVV>LVA的话)。
+            pcCaptured = ucpcSquares[sqDst];
+            if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 5); // 帅(将)的价值是5
+                lpmvsCurr++;
             }
-            __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-            lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-            lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 相(象)的价值是1
-            lpmvsCurr ++;
-          }
+            lpucsqDst++;
+            sqDst = *lpucsqDst;
         }
-        lpucsqDst ++;
-        sqDst = *lpucsqDst;
-        lpucsqPin ++;
-      }
-      if (bCanPromote && CAN_PROMOTE(sqSrc)) {
-        lpmvsCurr->wmv = MOVE(sqSrc, sqSrc);
-        lpmvsCurr->wvl = 0;
-        lpmvsCurr ++;
-      }
     }
-  }
 
-  // 4. 生成马的着法
-  for (i = KNIGHT_FROM; i <= KNIGHT_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
-      lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
-          pcCaptured = ucpcSquares[sqDst];
-          if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-            __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-            lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-            lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 马的价值是3
-            lpmvsCurr ++;
-          }
-        }
-        lpucsqDst ++;
-        sqDst = *lpucsqDst;
-        lpucsqPin ++;
-      }
-    }
-  }
-
-  // 5. 生成车的着法
-  for (i = ROOK_FROM; i <= ROOK_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      x = FILE_X(sqSrc);
-      y = RANK_Y(sqSrc);
-
-      lpsmv = RankMovePtr(x, y);
-      sqDst = lpsmv->ucRookCap[0] + RANK_DISP(y);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
-          lpmvsCurr ++;
-        }
-      }
-      sqDst = lpsmv->ucRookCap[1] + RANK_DISP(y);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
-          lpmvsCurr ++;
-        }
-      }
-
-      lpsmv = FileMovePtr(x, y);
-      sqDst = lpsmv->ucRookCap[0] + FILE_DISP(x);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
-          lpmvsCurr ++;
-        }
-      }
-      sqDst = lpsmv->ucRookCap[1] + FILE_DISP(x);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
-          lpmvsCurr ++;
-        }
-      }
-    }
-  }
-
-  // 6. 生成炮的着法
-  for (i = CANNON_FROM; i <= CANNON_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      x = FILE_X(sqSrc);
-      y = RANK_Y(sqSrc);
-
-      lpsmv = RankMovePtr(x, y);
-      sqDst = lpsmv->ucCannonCap[0] + RANK_DISP(y);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
-          lpmvsCurr ++;
-        }
-      }
-      sqDst = lpsmv->ucCannonCap[1] + RANK_DISP(y);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
-          lpmvsCurr ++;
-        }
-      }
-
-      lpsmv = FileMovePtr(x, y);
-      sqDst = lpsmv->ucCannonCap[0] + FILE_DISP(x);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-            if (!LegalMove(MOVE(sqSrc, sqDst))) {
-                LegalMove(MOVE(sqSrc, sqDst));
+    // 2. 生成仕(士)的着法
+    for (i = ADVISOR_FROM; i <= ADVISOR_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 仕(士)的价值是1
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
             }
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
-          lpmvsCurr ++;
+            if (bCanPromote && CAN_PROMOTE(sqSrc)) {
+                lpmvsCurr->wmv = MOVE(sqSrc, sqSrc);
+                lpmvsCurr->wvl = 0;
+                lpmvsCurr++;
+            }
         }
-      }
-      sqDst = lpsmv->ucCannonCap[1] + FILE_DISP(x);
-      __ASSERT_SQUARE(sqDst);
-      if (sqDst != sqSrc) {
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
-          lpmvsCurr ++;
-        }
-      }
     }
-  }
 
-  // 7. 生成兵(卒)的着法
-  for (i = PAWN_FROM; i <= PAWN_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqPawnMoves[sdPlayer][sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        pcCaptured = ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 2); // 兵(卒)的价值是2
-          lpmvsCurr ++;
+    // 3. 生成相(象)的着法
+    for (i = BISHOP_FROM; i <= BISHOP_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqBishopMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqBishopPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
+                    pcCaptured = ucpcSquares[sqDst];
+                    if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                        if (!LegalMove(MOVE(sqSrc, sqDst))) {
+                            LegalMove(MOVE(sqSrc, sqDst));
+                        }
+                        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                        lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                        lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 1); // 相(象)的价值是1
+                        lpmvsCurr++;
+                    }
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
+            if (bCanPromote && CAN_PROMOTE(sqSrc)) {
+                lpmvsCurr->wmv = MOVE(sqSrc, sqSrc);
+                lpmvsCurr->wvl = 0;
+                lpmvsCurr++;
+            }
         }
-        lpucsqDst ++;
-        sqDst = *lpucsqDst;
-      }
     }
-  }
-  return lpmvsCurr - lpmvs;
+
+    // 4. 生成马的着法
+    for (i = KNIGHT_FROM; i <= KNIGHT_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
+                    pcCaptured = ucpcSquares[sqDst];
+                    if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                        lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                        lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 马的价值是3
+                        lpmvsCurr++;
+                    }
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
+        }
+    }
+
+    // 5. 生成车的着法
+    for (i = ROOK_FROM; i <= ROOK_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+
+            lpsmv = RankMovePtr(x, y);
+            sqDst = lpsmv->ucRookCap[0] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucRookCap[1] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+
+            lpsmv = FileMovePtr(x, y);
+            sqDst = lpsmv->ucRookCap[0] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucRookCap[1] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 4); // 车的价值是4
+                    lpmvsCurr++;
+                }
+            }
+        }
+    }
+
+    // 6. 生成炮的着法
+    for (i = CANNON_FROM; i <= CANNON_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+
+            lpsmv = RankMovePtr(x, y);
+            sqDst = lpsmv->ucCannonCap[0] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucCannonCap[1] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+
+            lpsmv = FileMovePtr(x, y);
+            sqDst = lpsmv->ucCannonCap[0] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    if (!LegalMove(MOVE(sqSrc, sqDst))) {
+                        LegalMove(MOVE(sqSrc, sqDst));
+                    }
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+            sqDst = lpsmv->ucCannonCap[1] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            if (sqDst != sqSrc) {
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 3); // 炮的价值是3
+                    lpmvsCurr++;
+                }
+            }
+        }
+    }
+
+    // 7. 生成兵(卒)的着法
+    for (i = PAWN_FROM; i <= PAWN_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqPawnMoves[sdPlayer][sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                pcCaptured = ucpcSquares[sqDst];
+                if (IS_SAME_SIDE(pcCaptured, nOppSideTag)) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->wmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr->wvl = MvvLva(sqDst, pcCaptured, 2); // 兵(卒)的价值是2
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+            }
+        }
+    }
+    return lpmvsCurr - lpmvs;
 }
 
 // 不吃子着法生成器
 int64_t PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
-  int64_t i, sqSrc, sqDst, x, y, nSideTag;
-  SlideMoveStruct *lpsmv;
-  uint8_t *lpucsqDst, *lpucsqPin;
-  MoveStruct *lpmvsCurr;
-  // 生成不吃子着法的过程包括以下几个步骤：
+    int64_t i, sqSrc, sqDst, x, y, nSideTag;
+    SlideMoveStruct *lpsmv;
+    uint8_t *lpucsqDst, *lpucsqPin;
+    MoveStruct *lpmvsCurr;
+    // 生成不吃子着法的过程包括以下几个步骤：
 
-  lpmvsCurr = lpmvs;
-  nSideTag = SIDE_TAG(sdPlayer);
+    lpmvsCurr = lpmvs;
+    nSideTag = SIDE_TAG(sdPlayer);
 
-  // 1. 生成帅(将)的着法
-  sqSrc = ucsqPieces[nSideTag + KING_FROM];
-  if (sqSrc != 0) {
-    __ASSERT_SQUARE(sqSrc);
-    lpucsqDst = PreGen.ucsqKingMoves[sqSrc];
-    sqDst = *lpucsqDst;
-    while (sqDst != 0) {
-      __ASSERT_SQUARE(sqDst);
-      // 找到一个着法后，首先判断是否吃到棋子
-      if (ucpcSquares[sqDst] == NO_PIECE) {
-        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-        lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-        lpmvsCurr ++;
-      }
-      lpucsqDst ++;
-      sqDst = *lpucsqDst;
-    }
-  }
-
-  // 2. 生成仕(士)的着法
-  for (i = ADVISOR_FROM; i <= ADVISOR_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
+    // 1. 生成帅(将)的着法
+    sqSrc = ucsqPieces[nSideTag + KING_FROM];
     if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[sqDst] == NO_PIECE) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr ++;
-        }
-        lpucsqDst ++;
+        __ASSERT_SQUARE(sqSrc);
+        lpucsqDst = PreGen.ucsqKingMoves[sqSrc];
         sqDst = *lpucsqDst;
-      }
-    }
-  }
-
-  // 3. 生成相(象)的着法
-  for (i = BISHOP_FROM; i <= BISHOP_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqBishopMoves[sqSrc];
-      lpucsqPin = PreGen.ucsqBishopPins[sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr ++;
+        while (sqDst != 0) {
+            __ASSERT_SQUARE(sqDst);
+            // 找到一个着法后，首先判断是否吃到棋子
+            if (ucpcSquares[sqDst] == NO_PIECE) {
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+            }
+            lpucsqDst++;
+            sqDst = *lpucsqDst;
         }
-        lpucsqDst ++;
-        sqDst = *lpucsqDst;
-        lpucsqPin ++;
-      }
     }
-  }
 
-  // 4. 生成马的着法
-  for (i = KNIGHT_FROM; i <= KNIGHT_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
-      lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr ++;
+    // 2. 生成仕(士)的着法
+    for (i = ADVISOR_FROM; i <= ADVISOR_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+            }
         }
-        lpucsqDst ++;
-        sqDst = *lpucsqDst;
-        lpucsqPin ++;
-      }
     }
-  }
 
-  // 5. 生成车和炮的着法，没有必要判断是否吃到本方棋子
-  for (i = ROOK_FROM; i <= CANNON_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      x = FILE_X(sqSrc);
-      y = RANK_Y(sqSrc);
-
-      lpsmv = RankMovePtr(x, y);
-      sqDst = lpsmv->ucNonCap[0] + RANK_DISP(y);
-      __ASSERT_SQUARE(sqDst);
-      while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
-        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-        lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-        lpmvsCurr ++;
-        sqDst --;
-      }
-      sqDst = lpsmv->ucNonCap[1] + RANK_DISP(y);
-      __ASSERT_SQUARE(sqDst);
-      while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
-        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-        lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-        lpmvsCurr ++;
-        sqDst ++;
-      }
-
-      lpsmv = FileMovePtr(x, y);
-      sqDst = lpsmv->ucNonCap[0] + FILE_DISP(x);
-      __ASSERT_SQUARE(sqDst);
-      while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
-        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-        lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-        lpmvsCurr ++;
-        sqDst -= 16;
-      }
-      sqDst = lpsmv->ucNonCap[1] + FILE_DISP(x);
-      __ASSERT_SQUARE(sqDst);
-      while (sqDst != sqSrc) {
-        __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
-        if (!LegalMove(MOVE(sqSrc, sqDst))) {
-            LegalMove(MOVE(sqSrc, sqDst));
+    // 3. 生成相(象)的着法
+    for (i = BISHOP_FROM; i <= BISHOP_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqBishopMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqBishopPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
         }
-        __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-        lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-        lpmvsCurr ++;
-        sqDst += 16;
-      }
     }
-  }
 
-  // 6. 生成兵(卒)的着法
-  for (i = PAWN_FROM; i <= PAWN_TO; i ++) {
-    sqSrc = ucsqPieces[nSideTag + i];
-    if (sqSrc != 0) {
-      __ASSERT_SQUARE(sqSrc);
-      lpucsqDst = PreGen.ucsqPawnMoves[sdPlayer][sqSrc];
-      sqDst = *lpucsqDst;
-      while (sqDst != 0) {
-        __ASSERT_SQUARE(sqDst);
-        if (ucpcSquares[sqDst] == NO_PIECE) {
-          __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
-          lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
-          lpmvsCurr ++;
+    // 4. 生成马的着法
+    for (i = KNIGHT_FROM; i <= KNIGHT_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE && ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
+            }
         }
-        lpucsqDst ++;
-        sqDst = *lpucsqDst;
-      }
     }
-  }
-  return lpmvsCurr - lpmvs;
+
+    // 5. 生成车和炮的着法，没有必要判断是否吃到本方棋子
+    for (i = ROOK_FROM; i <= CANNON_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+
+            lpsmv = RankMovePtr(x, y);
+            sqDst = lpsmv->ucNonCap[0] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst--;
+            }
+            sqDst = lpsmv->ucNonCap[1] + RANK_DISP(y);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst++;
+            }
+
+            lpsmv = FileMovePtr(x, y);
+            sqDst = lpsmv->ucNonCap[0] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst -= 16;
+            }
+            sqDst = lpsmv->ucNonCap[1] + FILE_DISP(x);
+            __ASSERT_SQUARE(sqDst);
+            while (sqDst != sqSrc) {
+                __ASSERT(ucpcSquares[sqDst] == NO_PIECE);
+                if (!LegalMove(MOVE(sqSrc, sqDst))) {
+                    LegalMove(MOVE(sqSrc, sqDst));
+                }
+                __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                lpmvsCurr++;
+                sqDst += 16;
+            }
+        }
+    }
+
+    // 6. 生成兵(卒)的着法
+    for (i = PAWN_FROM; i <= PAWN_TO; i++) {
+        sqSrc = ucsqPieces[nSideTag + i];
+        if (sqSrc != 0) {
+            __ASSERT_SQUARE(sqSrc);
+            lpucsqDst = PreGen.ucsqPawnMoves[sdPlayer][sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[sqDst] == NO_PIECE) {
+                    __ASSERT(LegalMove(MOVE(sqSrc, sqDst)));
+                    lpmvsCurr->dwmv = MOVE(sqSrc, sqDst);
+                    lpmvsCurr++;
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+            }
+        }
+    }
+    return lpmvsCurr - lpmvs;
 }
 
 // “捉”的检测
 int64_t PositionStruct::ChasedBy(int64_t mv) const {
-  int64_t i, nSideTag, pcMoved, pcCaptured;
-  int64_t sqSrc, sqDst, x, y;
-  uint8_t *lpucsqDst, *lpucsqPin;
-  SlideMoveStruct *lpsmv;
+    int64_t i, nSideTag, pcMoved, pcCaptured;
+    int64_t sqSrc, sqDst, x, y;
+    uint8_t *lpucsqDst, *lpucsqPin;
+    SlideMoveStruct *lpsmv;
 
-  sqSrc = DST(mv);
-  pcMoved = this->ucpcSquares[sqSrc];
-  nSideTag = SIDE_TAG(this->sdPlayer);
-  __ASSERT_SQUARE(sqSrc);
-  __ASSERT_PIECE(pcMoved);
-  __ASSERT_BOUND(0, pcMoved - OPP_SIDE_TAG(this->sdPlayer), 31);
+    sqSrc = DST(mv);
+    pcMoved = this->ucpcSquares[sqSrc];
+    nSideTag = SIDE_TAG(this->sdPlayer);
+    __ASSERT_SQUARE(sqSrc);
+    __ASSERT_PIECE(pcMoved);
+    __ASSERT_BOUND(0, pcMoved - OPP_SIDE_TAG(this->sdPlayer), 31);
 
-  // “捉”的判断包括以下几部分内容：
-  switch (pcMoved - OPP_SIDE_TAG(this->sdPlayer)) {
+    // “捉”的判断包括以下几部分内容：
+    switch (pcMoved - OPP_SIDE_TAG(this->sdPlayer)) {
 
-  // 1. 走了马，判断是否捉车或捉有根的炮兵(卒)
-  case KNIGHT_FROM:
-  case KNIGHT_TO:
-    // 逐一检测马踩的八个位置
-    lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
-    lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
-    sqDst = *lpucsqDst;
-    while (sqDst != 0) {
-      __ASSERT_SQUARE(sqDst);
-      if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
-        pcCaptured = this->ucpcSquares[sqDst];
-        if (IS_SAME_SIDE(pcCaptured, nSideTag)) {
-          pcCaptured -= nSideTag;
-          __ASSERT_BOUND(0, pcCaptured, 30);
-          // 技巧：优化兵种判断的分枝
-          if (pcCaptured <= ROOK_TO) {
-            // 马捉仕(士)、相(象)和马的情况不予考虑
-            if (pcCaptured >= ROOK_FROM) {
-              // 马捉到了车
-              return pcCaptured;
+        // 1. 走了马，判断是否捉车或捉有根的炮兵(卒)
+        case KNIGHT_FROM:
+        case KNIGHT_TO:
+            // 逐一检测马踩的八个位置
+            lpucsqDst = PreGen.ucsqKnightMoves[sqSrc];
+            lpucsqPin = PreGen.ucsqKnightPins[sqSrc];
+            sqDst = *lpucsqDst;
+            while (sqDst != 0) {
+                __ASSERT_SQUARE(sqDst);
+                if (ucpcSquares[*lpucsqPin] == NO_PIECE) {
+                    pcCaptured = this->ucpcSquares[sqDst];
+                    if (IS_SAME_SIDE(pcCaptured, nSideTag)) {
+                        pcCaptured -= nSideTag;
+                        __ASSERT_BOUND(0, pcCaptured, 30);
+                        // 技巧：优化兵种判断的分枝
+                        if (pcCaptured <= ROOK_TO) {
+                            // 马捉仕(士)、相(象)和马的情况不予考虑
+                            if (pcCaptured >= ROOK_FROM) {
+                                // 马捉到了车
+                                return pcCaptured;
+                            }
+                        } else {
+                            if (pcCaptured <= CANNON_TO) {
+                                // 马捉到了炮，要判断炮是否受保护
+                                if (!Protected(this->sdPlayer, sqDst)) {
+                                    return pcCaptured;
+                                }
+                            } else {
+                                // 马捉到了兵(卒)，要判断兵(卒)是否过河并受保护
+                                if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
+                                    return pcCaptured;
+                                }
+                            }
+                        }
+                    }
+                }
+                lpucsqDst++;
+                sqDst = *lpucsqDst;
+                lpucsqPin++;
             }
-          } else {
-            if (pcCaptured <= CANNON_TO) {
-              // 马捉到了炮，要判断炮是否受保护
-              if (!Protected(this->sdPlayer, sqDst)) {
-                return pcCaptured;
-              }
+            break;
+
+            // 2. 走了车，判断是否捉有根的马炮兵(卒)
+        case ROOK_FROM:
+        case ROOK_TO:
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+            if (((SRC(mv) ^ sqSrc) & 0xf) == 0) {
+                // 如果车纵向移动了，则判断车横向吃到的子
+                lpsmv = RankMovePtr(x, y);
+                for (i = 0; i < 2; i++) {
+                    sqDst = lpsmv->ucRookCap[i] + RANK_DISP(y);
+                    __ASSERT_SQUARE(sqDst);
+                    if (sqDst != sqSrc) {
+                        pcCaptured = this->ucpcSquares[sqDst];
+                        if ((pcCaptured & nSideTag) != 0) {
+                            pcCaptured -= nSideTag;
+                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            // 技巧：优化兵种判断的分枝
+                            if (pcCaptured <= ROOK_TO) {
+                                // 车捉仕(士)、相(象)的情况不予考虑
+                                if (pcCaptured >= KNIGHT_FROM) {
+                                    if (pcCaptured <= KNIGHT_TO) {
+                                        // 车捉到了马，要判断马是否受保护
+                                        if (!Protected(this->sdPlayer, sqDst)) {
+                                            return pcCaptured;
+                                        }
+                                    }
+                                    // 车捉车的情况不予考虑
+                                }
+                            } else {
+                                if (pcCaptured <= CANNON_TO) {
+                                    // 车捉到了炮，要判断炮是否受保护
+                                    if (!Protected(this->sdPlayer, sqDst)) {
+                                        return pcCaptured;
+                                    }
+                                } else {
+                                    // 车捉到了兵(卒)，要判断兵(卒)是否过河并受保护
+                                    if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
+                                        return pcCaptured;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
-              // 马捉到了兵(卒)，要判断兵(卒)是否过河并受保护
-              if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
-                return pcCaptured;
-              }
+                // 如果车横向移动了，则判断车纵向吃到的子
+                lpsmv = FileMovePtr(x, y);
+                for (i = 0; i < 2; i++) {
+                    sqDst = lpsmv->ucRookCap[i] + FILE_DISP(x);
+                    __ASSERT_SQUARE(sqDst);
+                    if (sqDst != sqSrc) {
+                        pcCaptured = this->ucpcSquares[sqDst];
+                        if ((pcCaptured & nSideTag) != 0) {
+                            pcCaptured -= nSideTag;
+                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            // 技巧：优化兵种判断的分枝
+                            if (pcCaptured <= ROOK_TO) {
+                                // 车捉仕(士)、相(象)的情况不予考虑
+                                if (pcCaptured >= KNIGHT_FROM) {
+                                    if (pcCaptured <= KNIGHT_TO) {
+                                        // 车捉到了马，要判断马是否受保护
+                                        if (!Protected(this->sdPlayer, sqDst)) {
+                                            return pcCaptured;
+                                        }
+                                    }
+                                    // 车捉车的情况不予考虑
+                                }
+                            } else {
+                                if (pcCaptured <= CANNON_TO) {
+                                    // 车捉到了炮，要判断炮是否受保护
+                                    if (!Protected(this->sdPlayer, sqDst)) {
+                                        return pcCaptured;
+                                    }
+                                } else {
+                                    // 车捉到了兵(卒)，要判断兵(卒)是否过河并受保护
+                                    if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
+                                        return pcCaptured;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-      lpucsqDst ++;
-      sqDst = *lpucsqDst;
-      lpucsqPin ++;
+            break;
+
+            // 3. 走了炮，判断是否捉车或捉有根的马兵(卒)
+        case CANNON_FROM:
+        case CANNON_TO:
+            x = FILE_X(sqSrc);
+            y = RANK_Y(sqSrc);
+            if (((SRC(mv) ^ sqSrc) & 0xf) == 0) {
+                // 如果炮纵向移动了，则判断炮横向吃到的子
+                lpsmv = RankMovePtr(x, y);
+                for (i = 0; i < 2; i++) {
+                    sqDst = lpsmv->ucCannonCap[i] + RANK_DISP(y);
+                    __ASSERT_SQUARE(sqDst);
+                    if (sqDst != sqSrc) {
+                        pcCaptured = this->ucpcSquares[sqDst];
+                        if ((pcCaptured & nSideTag) != 0) {
+                            pcCaptured -= nSideTag;
+                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            // 技巧：优化兵种判断的分枝
+                            if (pcCaptured <= ROOK_TO) {
+                                // 炮捉仕(士)、相(象)的情况不予考虑
+                                if (pcCaptured >= KNIGHT_FROM) {
+                                    if (pcCaptured <= KNIGHT_TO) {
+                                        // 炮捉到了马，要判断马是否受保护
+                                        if (!Protected(this->sdPlayer, sqDst)) {
+                                            return pcCaptured;
+                                        }
+                                    } else {
+                                        // 炮捉到了车
+                                        return pcCaptured;
+                                    }
+                                }
+                            } else {
+                                // 炮捉炮的情况不予考虑
+                                if (pcCaptured >= PAWN_FROM) {
+                                    // 炮捉到了兵(卒)，要判断兵(卒)是否过河并受保护
+                                    if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
+                                        return pcCaptured;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // 如果炮横向移动了，则判断炮纵向吃到的子
+                lpsmv = FileMovePtr(x, y);
+                for (i = 0; i < 2; i++) {
+                    sqDst = lpsmv->ucCannonCap[i] + FILE_DISP(x);
+                    __ASSERT_SQUARE(sqDst);
+                    if (sqDst != sqSrc) {
+                        pcCaptured = this->ucpcSquares[sqDst];
+                        if ((pcCaptured & nSideTag) != 0) {
+                            pcCaptured -= nSideTag;
+                            __ASSERT_BOUND(0, pcCaptured, 15);
+                            // 技巧：优化兵种判断的分枝
+                            if (pcCaptured <= ROOK_TO) {
+                                // 炮捉仕(士)、相(象)的情况不予考虑
+                                if (pcCaptured >= KNIGHT_FROM) {
+                                    if (pcCaptured <= KNIGHT_TO) {
+                                        // 炮捉到了马，要判断马是否受保护
+                                        if (!Protected(this->sdPlayer, sqDst)) {
+                                            return pcCaptured;
+                                        }
+                                    } else {
+                                        // 炮捉到了车
+                                        return pcCaptured;
+                                    }
+                                }
+                            } else {
+                                // 炮捉炮的情况不予考虑
+                                if (pcCaptured >= PAWN_FROM) {
+                                    // 炮捉到了兵(卒)，要判断兵(卒)是否过河并受保护
+                                    if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
+                                        return pcCaptured;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            break;
     }
-    break;
 
-  // 2. 走了车，判断是否捉有根的马炮兵(卒)
-  case ROOK_FROM:
-  case ROOK_TO:
-    x = FILE_X(sqSrc);
-    y = RANK_Y(sqSrc);
-    if (((SRC(mv) ^ sqSrc) & 0xf) == 0) {
-      // 如果车纵向移动了，则判断车横向吃到的子
-      lpsmv = RankMovePtr(x, y);
-      for (i = 0; i < 2; i ++) {
-        sqDst = lpsmv->ucRookCap[i] + RANK_DISP(y);
-        __ASSERT_SQUARE(sqDst);
-        if (sqDst != sqSrc) {
-          pcCaptured = this->ucpcSquares[sqDst];
-          if ((pcCaptured & nSideTag) != 0) {
-            pcCaptured -= nSideTag;
-            __ASSERT_BOUND(0, pcCaptured, 15);
-            // 技巧：优化兵种判断的分枝
-            if (pcCaptured <= ROOK_TO) {
-              // 车捉仕(士)、相(象)的情况不予考虑
-              if (pcCaptured >= KNIGHT_FROM) {
-                if (pcCaptured <= KNIGHT_TO) {
-                  // 车捉到了马，要判断马是否受保护
-                  if (!Protected(this->sdPlayer, sqDst)) {
-                    return pcCaptured;
-                  }
-                }
-                // 车捉车的情况不予考虑
-              }
-            } else {
-              if (pcCaptured <= CANNON_TO) {
-                // 车捉到了炮，要判断炮是否受保护
-                if (!Protected(this->sdPlayer, sqDst)) {
-                  return pcCaptured;
-                }
-              } else {
-                // 车捉到了兵(卒)，要判断兵(卒)是否过河并受保护
-                if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
-                  return pcCaptured;
-                }
-              }
-            }
-          }
-        }
-      }
-    } else {
-      // 如果车横向移动了，则判断车纵向吃到的子
-      lpsmv = FileMovePtr(x, y);
-      for (i = 0; i < 2; i ++) {
-        sqDst = lpsmv->ucRookCap[i] + FILE_DISP(x);
-        __ASSERT_SQUARE(sqDst);
-        if (sqDst != sqSrc) {
-          pcCaptured = this->ucpcSquares[sqDst];
-          if ((pcCaptured & nSideTag) != 0) {
-            pcCaptured -= nSideTag;
-            __ASSERT_BOUND(0, pcCaptured, 15);
-            // 技巧：优化兵种判断的分枝
-            if (pcCaptured <= ROOK_TO) {
-              // 车捉仕(士)、相(象)的情况不予考虑
-              if (pcCaptured >= KNIGHT_FROM) {
-                if (pcCaptured <= KNIGHT_TO) {
-                  // 车捉到了马，要判断马是否受保护
-                  if (!Protected(this->sdPlayer, sqDst)) {
-                    return pcCaptured;
-                  }
-                }
-                // 车捉车的情况不予考虑
-              }
-            } else {
-              if (pcCaptured <= CANNON_TO) {
-                // 车捉到了炮，要判断炮是否受保护
-                if (!Protected(this->sdPlayer, sqDst)) {
-                  return pcCaptured;
-                }
-              } else {
-                // 车捉到了兵(卒)，要判断兵(卒)是否过河并受保护
-                if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
-                  return pcCaptured;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    break;
-
-  // 3. 走了炮，判断是否捉车或捉有根的马兵(卒)
-  case CANNON_FROM:
-  case CANNON_TO:
-    x = FILE_X(sqSrc);
-    y = RANK_Y(sqSrc);
-    if (((SRC(mv) ^ sqSrc) & 0xf) == 0) {
-      // 如果炮纵向移动了，则判断炮横向吃到的子
-      lpsmv = RankMovePtr(x, y);
-      for (i = 0; i < 2; i ++) {
-        sqDst = lpsmv->ucCannonCap[i] + RANK_DISP(y);
-        __ASSERT_SQUARE(sqDst);
-        if (sqDst != sqSrc) {
-          pcCaptured = this->ucpcSquares[sqDst];
-          if ((pcCaptured & nSideTag) != 0) {
-            pcCaptured -= nSideTag;
-            __ASSERT_BOUND(0, pcCaptured, 15);
-            // 技巧：优化兵种判断的分枝
-            if (pcCaptured <= ROOK_TO) {
-              // 炮捉仕(士)、相(象)的情况不予考虑
-              if (pcCaptured >= KNIGHT_FROM) {
-                if (pcCaptured <= KNIGHT_TO) {
-                  // 炮捉到了马，要判断马是否受保护
-                  if (!Protected(this->sdPlayer, sqDst)) {
-                    return pcCaptured;
-                  }
-                } else {
-                  // 炮捉到了车
-                  return pcCaptured;
-                }
-              }
-            } else {
-              // 炮捉炮的情况不予考虑
-              if (pcCaptured >= PAWN_FROM) {
-                // 炮捉到了兵(卒)，要判断兵(卒)是否过河并受保护
-                if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
-                  return pcCaptured;
-                }
-              }
-            }
-          }
-        }
-      }
-    } else {
-      // 如果炮横向移动了，则判断炮纵向吃到的子
-      lpsmv = FileMovePtr(x, y);
-      for (i = 0; i < 2; i ++) {
-        sqDst = lpsmv->ucCannonCap[i] + FILE_DISP(x);
-        __ASSERT_SQUARE(sqDst);
-        if (sqDst != sqSrc) {
-          pcCaptured = this->ucpcSquares[sqDst];
-          if ((pcCaptured & nSideTag) != 0) {
-            pcCaptured -= nSideTag;
-            __ASSERT_BOUND(0, pcCaptured, 15);
-            // 技巧：优化兵种判断的分枝
-            if (pcCaptured <= ROOK_TO) {
-              // 炮捉仕(士)、相(象)的情况不予考虑
-              if (pcCaptured >= KNIGHT_FROM) {
-                if (pcCaptured <= KNIGHT_TO) {
-                  // 炮捉到了马，要判断马是否受保护
-                  if (!Protected(this->sdPlayer, sqDst)) {
-                    return pcCaptured;
-                  }
-                } else {
-                  // 炮捉到了车
-                  return pcCaptured;
-                }
-              }
-            } else {
-              // 炮捉炮的情况不予考虑
-              if (pcCaptured >= PAWN_FROM) {
-                // 炮捉到了兵(卒)，要判断兵(卒)是否过河并受保护
-                if (AWAY_HALF(sqDst, sdPlayer) && !Protected(this->sdPlayer, sqDst)) {
-                  return pcCaptured;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    break;
-  }
-
-  return 0;
+    return 0;
 }

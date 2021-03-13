@@ -37,64 +37,68 @@ const int64_t NULL_DEPTH = 2;    // 空着裁剪的深度
 
 // 置换表结构，置换表信息夹在两个Zobrist校验锁中间，可以防止存取冲突
 struct HashStruct {
-  uint32_t dwZobristLock0;           // Zobrist校验锁，第一部分
-  uint16_t wmv;                      // 最佳着法
-  uint8_t ucAlphaDepth, ucBetaDepth; // 深度(上边界和下边界)
-  int16_t svlAlpha, svlBeta;         // 分值(上边界和下边界)
-  uint32_t dwZobristLock1;           // Zobrist校验锁，第二部分
+    uint32_t dwZobristLock0;           // Zobrist校验锁，第一部分
+    uint16_t wmv;                      // 最佳着法
+    uint8_t ucAlphaDepth, ucBetaDepth; // 深度(上边界和下边界)
+    int16_t svlAlpha, svlBeta;         // 分值(上边界和下边界)
+    uint32_t dwZobristLock1;           // Zobrist校验锁，第二部分
 }; // hsh
 
 // 置换表信息
 extern int64_t nHashMask;              // 置换表的大小
 extern HashStruct *hshItems;       // 置换表的指针，ElephantEye采用多层的置换表
 #ifdef HASH_QUIESC
-  extern HashStruct *hshItemsQ;
+extern HashStruct *hshItemsQ;
 #endif
 
 inline void ClearHash(void) {         // 清空置换表
-  memset(hshItems, 0, (nHashMask + 1) * sizeof(HashStruct));
+    memset(hshItems, 0, (nHashMask + 1) * sizeof(HashStruct));
 #ifdef HASH_QUIESC
-  memset(hshItemsQ, 0, (nHashMask + 1) * sizeof(HashStruct));
+    memset(hshItemsQ, 0, (nHashMask + 1) * sizeof(HashStruct));
 #endif
 }
 
 inline void NewHash(int64_t nHashScale) { // 分配置换表，大小是 2^nHashScale 字节
-  nHashMask = ((1 << nHashScale) / sizeof(HashStruct)) - 1;
-  hshItems = new HashStruct[nHashMask + 1];
+    nHashMask = ((1 << nHashScale) / sizeof(HashStruct)) - 1;
+    hshItems = new HashStruct[nHashMask + 1];
 #ifdef HASH_QUIESC
-  hshItemsQ = new HashStruct[nHashMask + 1];
+    hshItemsQ = new HashStruct[nHashMask + 1];
 #endif
-  ClearHash();
+    ClearHash();
 }
 
 inline void DelHash(void) {           // 释放置换表
-  delete[] hshItems;
+    delete[] hshItems;
 #ifdef HASH_QUIESC
-  delete[] hshItemsQ;
+    delete[] hshItemsQ;
 #endif
 }
 
 // 判断置换表是否符合局面(Zobrist锁是否相等)
 inline bool HASH_POS_EQUAL(const HashStruct &hsh, const PositionStruct &pos) {
-  return hsh.dwZobristLock0 == pos.zobr.dwLock0 && hsh.dwZobristLock1 == pos.zobr.dwLock1;
+    return hsh.dwZobristLock0 == pos.zobr.dwLock0 && hsh.dwZobristLock1 == pos.zobr.dwLock1;
 }
 
 // 按局面和层数获取置换表项(返回一个引用，可以对其赋值)
 inline HashStruct &HASH_ITEM(const PositionStruct &pos, int64_t nLayer) {
-  return hshItems[(pos.zobr.dwKey + nLayer) & nHashMask];
+    return hshItems[(pos.zobr.dwKey + nLayer) & nHashMask];
 }
 
 // 置换表的管理过程
-void RecordHash(const PositionStruct &pos, int64_t nFlag, int64_t vl, int64_t nDepth, int64_t mv);                    // 存储置换表局面信息
-int64_t ProbeHash(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, bool bNoNull, int64_t &mv); // 获取置换表局面信息
+void RecordHash(const PositionStruct &pos, int64_t nFlag, int64_t vl, int64_t nDepth,
+                int64_t mv);                    // 存储置换表局面信息
+int64_t ProbeHash(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, bool bNoNull,
+                  int64_t &mv); // 获取置换表局面信息
 #ifdef HASH_QUIESC
-  void RecordHashQ(const PositionStruct &pos, int64_t vlBeta, int64_t vlAlpha); // 存储置换表局面信息(静态搜索)
-  int64_t ProbeHashQ(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta);   // 获取置换表局面信息(静态搜索)
+void RecordHashQ(const PositionStruct &pos, int64_t vlBeta, int64_t vlAlpha); // 存储置换表局面信息(静态搜索)
+int64_t ProbeHashQ(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta);   // 获取置换表局面信息(静态搜索)
 #endif
 
 #ifndef CCHESS_A3800
-  // UCCI支持 - 输出Hash表中的局面信息
-  bool PopHash(const PositionStruct &pos);
+
+// UCCI支持 - 输出Hash表中的局面信息
+bool PopHash(const PositionStruct &pos);
+
 #endif
 
 #endif

@@ -44,201 +44,205 @@ extern const int8_t ccLegalSpanTab[512];   // 合理着法跨度表
 extern const int8_t ccKnightPinTab[512];   // 马腿表
 
 inline bool IN_BOARD(int64_t sq) {
-  return cbcInBoard[sq];
+    return cbcInBoard[sq];
 }
 
 inline bool IN_FORT(int64_t sq) {
-  return cbcInFort[sq];
+    return cbcInFort[sq];
 }
 
 inline bool CAN_PROMOTE(int64_t sq) {
-  return cbcCanPromote[sq];
+    return cbcCanPromote[sq];
 }
 
 inline int8_t LEGAL_SPAN_TAB(int64_t nDisp) {
-  return ccLegalSpanTab[nDisp];
+    return ccLegalSpanTab[nDisp];
 }
 
 inline int8_t KNIGHT_PIN_TAB(int64_t nDisp) {
-  return ccKnightPinTab[nDisp];
+    return ccKnightPinTab[nDisp];
 }
 
 inline int64_t RANK_Y(int64_t sq) {
-  return sq >> 4;
+    return sq >> 4;
 }
 
 inline int64_t FILE_X(int64_t sq) {
-  return sq & 15;
+    return sq & 15;
 }
 
 inline int64_t COORD_XY(int64_t x, int64_t y) {
-  return x + (y << 4);
+    return x + (y << 4);
 }
 
 inline int64_t SQUARE_FLIP(int64_t sq) {
-  return 254 - sq;
+    return 254 - sq;
 }
 
 inline int64_t FILE_FLIP(int64_t x) {
-  return 14 - x;
+    return 14 - x;
 }
 
 inline int64_t RANK_FLIP(int64_t y) {
-  return 15 - y;
+    return 15 - y;
 }
 
 inline int64_t OPP_SIDE(int64_t sd) {
-  return 1 - sd;
+    return 1 - sd;
 }
 
 inline int64_t SQUARE_FORWARD(int64_t sq, int64_t sd) {
-  return sq - 16 + (sd << 5);
+    return sq - 16 + (sd << 5);
 }
 
 inline int64_t SQUARE_BACKWARD(int64_t sq, int64_t sd) {
-  return sq + 16 - (sd << 5);
+    return sq + 16 - (sd << 5);
 }
 
 inline bool KING_SPAN(int64_t sqSrc, int64_t sqDst) {
-  return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 1;
+    return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 1;
 }
 
 inline bool ADVISOR_SPAN(int64_t sqSrc, int64_t sqDst) {
-  return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 2;
+    return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 2;
 }
 
 inline bool BISHOP_SPAN(int64_t sqSrc, int64_t sqDst) {
-  return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 3;
+    return LEGAL_SPAN_TAB(sqDst - sqSrc + 256) == 3;
 }
 
 inline int64_t BISHOP_PIN(int64_t sqSrc, int64_t sqDst) {
-  return (sqSrc + sqDst) >> 1;
+    return (sqSrc + sqDst) >> 1;
 }
 
 inline int64_t KNIGHT_PIN(int64_t sqSrc, int64_t sqDst) {
-  return sqSrc + KNIGHT_PIN_TAB(sqDst - sqSrc + 256);
+    return sqSrc + KNIGHT_PIN_TAB(sqDst - sqSrc + 256);
 }
 
 inline bool WHITE_HALF(int64_t sq) {
-  return (sq & 0x80) != 0;
+    return (sq & 0x80) != 0;
 }
 
 inline bool BLACK_HALF(int64_t sq) {
-  return (sq & 0x80) == 0;
+    return (sq & 0x80) == 0;
 }
 
 inline bool HOME_HALF(int64_t sq, int64_t sd) {
-  return (sq & 0x80) != (sd << 7);
+    return (sq & 0x80) != (sd << 7);
 }
 
 inline bool AWAY_HALF(int64_t sq, int64_t sd) {
-  return (sq & 0x80) == (sd << 7);
+    return (sq & 0x80) == (sd << 7);
 }
 
 inline bool SAME_HALF(int64_t sqSrc, int64_t sqDst) {
-  return ((sqSrc ^ sqDst) & 0x80) == 0;
+    return ((sqSrc ^ sqDst) & 0x80) == 0;
 }
 
 inline bool DIFF_HALF(int64_t sqSrc, int64_t sqDst) {
-  return ((sqSrc ^ sqDst) & 0x80) != 0;
+    return ((sqSrc ^ sqDst) & 0x80) != 0;
 }
 
 inline int64_t RANK_DISP(int64_t y) {
-  return y << 4;
+    return y << 4;
 }
 
 inline int64_t FILE_DISP(int64_t x) {
-  return x;
+    return x;
 }
 
 inline bool IS_SAME_SIDE(int64_t pcMoved, int64_t nSideTag) {
     if (pcMoved == -1) {
-      return false;
+        return false;
     }
     return (pcMoved >= 32 && nSideTag == 32) || (pcMoved < 32 && nSideTag == 0);
 }
 
 // 借助“位行”和“位列”生成车炮着法的预置结构
 struct SlideMoveStruct {
-  uint8_t ucNonCap[2];    // 不吃子能走到的最大一格/最小一格
-  uint8_t ucRookCap[2];   // 车吃子能走到的最大一格/最小一格
-  uint8_t ucCannonCap[2]; // 炮吃子能走到的最大一格/最小一格
-  uint8_t ucSuperCap[2];  // 超级炮(隔两子吃子)能走到的最大一格/最小一格
+    uint8_t ucNonCap[2];    // 不吃子能走到的最大一格/最小一格
+    uint8_t ucRookCap[2];   // 车吃子能走到的最大一格/最小一格
+    uint8_t ucCannonCap[2]; // 炮吃子能走到的最大一格/最小一格
+    uint8_t ucSuperCap[2];  // 超级炮(隔两子吃子)能走到的最大一格/最小一格
 }; // smv
 
 // 借助“位行”和“位列”判断车炮着法合理性的预置结构
 struct SlideMaskStruct {
-  uint16_t wNonCap, wRookCap, wCannonCap, wSuperCap;
+    uint16_t wNonCap, wRookCap, wCannonCap, wSuperCap;
 }; // sms
 
 struct ZobristStruct {
-  uint32_t dwKey, dwLock0, dwLock1;
-  void InitZero(void) {
-    dwKey = dwLock0 = dwLock1 = 0;
-  }
-  void InitRC4(RC4Struct &rc4) {
-    dwKey = rc4.NextLong();
-    dwLock0 = rc4.NextLong();
-    dwLock1 = rc4.NextLong();
-  }
-  void Xor(const ZobristStruct &zobr) {
-    dwKey ^= zobr.dwKey;
-    dwLock0 ^= zobr.dwLock0;
-    dwLock1 ^= zobr.dwLock1;
-  }
-  void Xor(const ZobristStruct &zobr1, const ZobristStruct &zobr2) {
-    dwKey ^= zobr1.dwKey ^ zobr2.dwKey;
-    dwLock0 ^= zobr1.dwLock0 ^ zobr2.dwLock0;
-    dwLock1 ^= zobr1.dwLock1 ^ zobr2.dwLock1;
-  }
+    uint32_t dwKey, dwLock0, dwLock1;
+
+    void InitZero(void) {
+        dwKey = dwLock0 = dwLock1 = 0;
+    }
+
+    void InitRC4(RC4Struct &rc4) {
+        dwKey = rc4.NextLong();
+        dwLock0 = rc4.NextLong();
+        dwLock1 = rc4.NextLong();
+    }
+
+    void Xor(const ZobristStruct &zobr) {
+        dwKey ^= zobr.dwKey;
+        dwLock0 ^= zobr.dwLock0;
+        dwLock1 ^= zobr.dwLock1;
+    }
+
+    void Xor(const ZobristStruct &zobr1, const ZobristStruct &zobr2) {
+        dwKey ^= zobr1.dwKey ^ zobr2.dwKey;
+        dwLock0 ^= zobr1.dwLock0 ^ zobr2.dwLock0;
+        dwLock1 ^= zobr1.dwLock1 ^ zobr2.dwLock1;
+    }
 }; // zobr
 
 extern struct PreGenStruct {
-  // Zobrist键值表，分Zobrist键值和Zobrist校验锁两部分
-  ZobristStruct zobrPlayer;
-  ZobristStruct zobrTable[16][256];
+    // Zobrist键值表，分Zobrist键值和Zobrist校验锁两部分
+    ZobristStruct zobrPlayer;
+    ZobristStruct zobrTable[16][256];
 
-  uint16_t wBitRankMask[256]; // 每个格子的位行的屏蔽位
-  uint16_t wBitFileMask[256]; // 每个格子的位列的屏蔽位
+    uint16_t wBitRankMask[256]; // 每个格子的位行的屏蔽位
+    uint16_t wBitFileMask[256]; // 每个格子的位列的屏蔽位
 
-  /* 借助“位行”和“位列”生成车炮着法和判断车炮着法合理性的预置数组
-   *
-   * “位行”和“位列”技术是ElephantEye的核心技术，用来处理车和炮的着法生成、将军判断和局面分析。
-   * 以初始局面红方右边的炮在该列的行动为例，首先必须知道该列的“位列”，即"1010000101b"，
-   * ElephantEye有两种预置数组，即"...MoveTab"和"...MaskTab"，用法分别是：
-   * 一、如果要知道该子向前吃子的目标格(起始格是2，目标格是9)，那么希望查表就能知道这个格子，
-   * 　　预先生成一个数组"FileMoveTab_CannonCap[10][1024]"，使得"FileMoveTab_CannonCap[2][1010000101b] == 9"就可以了。
-   * 二、如果要判断该子能否吃到目标格(同样以起始格是2，目标格是9为例)，那么需要知道目标格的位列，即"0000000001b"，
-   * 　　只要把"...MoveTab"的格子以“屏蔽位”的形式重新记作数组"...MaskTab"就可以了，用“与”操作来判断能否吃到目标格，
-   * 　　通常一个"...MaskTab"单元会包括多个屏蔽位，判断能否吃到同行或同列的某个格子时，只需要做一次判断就可以了。
-   */
-  SlideMoveStruct smvRankMoveTab[9][512];   // 36,864 字节
-  SlideMoveStruct smvFileMoveTab[10][1024]; // 81,920 字节
-  SlideMaskStruct smsRankMaskTab[9][512];   // 36,864 字节
-  SlideMaskStruct smsFileMaskTab[10][1024]; // 81,920 字节
-                                            // 共计:  237,568 字节
+    /* 借助“位行”和“位列”生成车炮着法和判断车炮着法合理性的预置数组
+     *
+     * “位行”和“位列”技术是ElephantEye的核心技术，用来处理车和炮的着法生成、将军判断和局面分析。
+     * 以初始局面红方右边的炮在该列的行动为例，首先必须知道该列的“位列”，即"1010000101b"，
+     * ElephantEye有两种预置数组，即"...MoveTab"和"...MaskTab"，用法分别是：
+     * 一、如果要知道该子向前吃子的目标格(起始格是2，目标格是9)，那么希望查表就能知道这个格子，
+     * 　　预先生成一个数组"FileMoveTab_CannonCap[10][1024]"，使得"FileMoveTab_CannonCap[2][1010000101b] == 9"就可以了。
+     * 二、如果要判断该子能否吃到目标格(同样以起始格是2，目标格是9为例)，那么需要知道目标格的位列，即"0000000001b"，
+     * 　　只要把"...MoveTab"的格子以“屏蔽位”的形式重新记作数组"...MaskTab"就可以了，用“与”操作来判断能否吃到目标格，
+     * 　　通常一个"...MaskTab"单元会包括多个屏蔽位，判断能否吃到同行或同列的某个格子时，只需要做一次判断就可以了。
+     */
+    SlideMoveStruct smvRankMoveTab[9][512];   // 36,864 字节
+    SlideMoveStruct smvFileMoveTab[10][1024]; // 81,920 字节
+    SlideMaskStruct smsRankMaskTab[9][512];   // 36,864 字节
+    SlideMaskStruct smsFileMaskTab[10][1024]; // 81,920 字节
+    // 共计:  237,568 字节
 
-  /* 其余棋子(不适合用“位行”和“位列”)的着法预生成数组
-   *
-   * 这部分数组是真正意义上的“着法预生成”数组，可以根据某个棋子的起始格直接查数组，得到所有的目标格。
-   * 使用数组时，可以根据起始格来确定一个指针"g_...Moves[Square]"，这个指针指向一系列目标格，以0结束。
-   * 为了对齐地址，数组[256][n]中n总是4的倍数，而且必须大于n(因为数组包括了结束标识符0)，除了象眼和马腿数组。
-   */
-  uint8_t ucsqKingMoves[256][8];
-  uint8_t ucsqAdvisorMoves[256][8];
-  uint8_t ucsqBishopMoves[256][8];
-  uint8_t ucsqBishopPins[256][4];
-  uint8_t ucsqKnightMoves[256][12];
-  uint8_t ucsqKnightPins[256][8];
-  uint8_t ucsqPawnMoves[2][256][4];
+    /* 其余棋子(不适合用“位行”和“位列”)的着法预生成数组
+     *
+     * 这部分数组是真正意义上的“着法预生成”数组，可以根据某个棋子的起始格直接查数组，得到所有的目标格。
+     * 使用数组时，可以根据起始格来确定一个指针"g_...Moves[Square]"，这个指针指向一系列目标格，以0结束。
+     * 为了对齐地址，数组[256][n]中n总是4的倍数，而且必须大于n(因为数组包括了结束标识符0)，除了象眼和马腿数组。
+     */
+    uint8_t ucsqKingMoves[256][8];
+    uint8_t ucsqAdvisorMoves[256][8];
+    uint8_t ucsqBishopMoves[256][8];
+    uint8_t ucsqBishopPins[256][4];
+    uint8_t ucsqKnightMoves[256][12];
+    uint8_t ucsqKnightPins[256][8];
+    uint8_t ucsqPawnMoves[2][256][4];
 } PreGen;
 
 // 局面预评价结构
 extern struct PreEvalStruct {
-  bool bPromotion;
-  int64_t vlAdvanced;
-  uint8_t ucvlWhitePieces[8][256];
-  uint8_t ucvlBlackPieces[8][256];
+    bool bPromotion;
+    int64_t vlAdvanced;
+    uint8_t ucvlWhitePieces[8][256];
+    uint8_t ucvlBlackPieces[8][256];
 } PreEval;
 
 void PreGenInit(void);
