@@ -97,7 +97,7 @@ int main(void) {
                 Search.pos.PreEvaluate();
                 Search.nBanMoves = 0;
 
-                // todo: print
+                // todo: remove print
                 Search.pos.PrintBoard();
 
                 break;

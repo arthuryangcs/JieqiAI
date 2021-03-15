@@ -230,6 +230,7 @@ extern struct PreGenStruct {
      */
     uint8_t ucsqKingMoves[256][8];
     uint8_t ucsqAdvisorMoves[256][8];
+    uint8_t ucsqUnknownAdvisorMoves[256][8];
     uint8_t ucsqBishopMoves[256][8];
     uint8_t ucsqBishopPins[256][4];
     uint8_t ucsqKnightMoves[256][12];
@@ -245,6 +246,6 @@ extern struct PreEvalStruct {
     uint8_t ucvlBlackPieces[8][256];
 } PreEval;
 
-void PreGenInit(void);
+void PreGenInit();
 
 #endif

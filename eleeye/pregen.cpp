@@ -346,6 +346,7 @@ void PreGenInit(void) {
             }
             __ASSERT(n <= 4);
             PreGen.ucsqKingMoves[sqSrc][n] = 0;
+
             // 生成仕(士)的着法预生成数组
             n = 0;
             for (i = 0; i < 4; i++) {
@@ -357,6 +358,17 @@ void PreGenInit(void) {
                     n++;
                 }
             }
+
+            // 生成仕(士)的着法预生成数组，揭棋
+            n = 0;
+            for (i = 0; i < 4; i++) {
+                sqDst = sqSrc + cnAdvisorMoveTab[i];
+                if (IN_FORT(sqDst)) {
+                    PreGen.ucsqUnknownAdvisorMoves[sqSrc][n] = sqDst;
+                    n++;
+                }
+            }
+
             __ASSERT(n <= 4);
             PreGen.ucsqAdvisorMoves[sqSrc][n] = 0;
             // 生成相(象)的着法预生成数组，包括象眼数组

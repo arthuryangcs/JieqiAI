@@ -251,7 +251,7 @@ int64_t PositionStruct::GenCapMoves(MoveStruct *lpmvs) const {
         sqSrc = ucsqPieces[nSideTag + i];
         if (sqSrc != 0) {
             __ASSERT_SQUARE(sqSrc);
-            lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
+            lpucsqDst = PreGen.ucsqUnknownAdvisorMoves[sqSrc];
             sqDst = *lpucsqDst;
             while (sqDst != 0) {
                 __ASSERT_SQUARE(sqDst);
@@ -741,7 +741,7 @@ int64_t PositionStruct::GenNonCapMoves(MoveStruct *lpmvs) const {
         sqSrc = ucsqPieces[nSideTag + i];
         if (sqSrc != 0) {
             __ASSERT_SQUARE(sqSrc);
-            lpucsqDst = PreGen.ucsqAdvisorMoves[sqSrc];
+            lpucsqDst = PreGen.ucsqUnknownAdvisorMoves[sqSrc];
             sqDst = *lpucsqDst;
             while (sqDst != 0) {
                 __ASSERT_SQUARE(sqDst);

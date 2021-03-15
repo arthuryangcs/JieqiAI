@@ -307,6 +307,46 @@ static const uint8_t cucvlCannonEndgame[256] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
+// 7. 开中局的揭棋
+static const uint8_t cucvlUnknownMidgame[256] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,50,10,20,30, 0,30,20,10,50, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0,20, 0, 0, 0, 0, 0,20, 0, 0, 0, 0, 0,
+        0, 0, 0,10, 0,10, 0,10, 0,10, 0,10, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,10, 0,10, 0,10, 0,10, 0,10, 0, 0, 0, 0,
+        0, 0, 0, 0,20, 0, 0, 0, 0, 0,20, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,50,10,20,30, 0,30,20,10,50, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+// 8. 残局的揭棋
+static const uint8_t cucvlUnknowEndgame[256] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,50,10,20,30, 0,30,20,10,50, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0,20, 0, 0, 0, 0, 0,20, 0, 0, 0, 0, 0,
+        0, 0, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 0, 0, 0,
+        0, 0, 0, 0,20, 0, 0, 0, 0, 0,20, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,50,10,20,30, 0,30,20,10,50, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
 // 空头炮的威胁分值，指标是对红方来说的行号(即黑方要用15去减)，大体上空头炮位置越高威胁越大。进入残局时，该值要相应减少。
 static const int64_t cvlHollowThreat[16] = {
         0, 0, 0, 0, 0, 0, 60, 65, 70, 75, 80, 80, 80, 0, 0, 0
@@ -332,9 +372,12 @@ static const int64_t cvlBottomThreat[16] = {
 
 const int64_t ROOK_MIDGAME_VALUE = 6;
 const int64_t KNIGHT_CANNON_MIDGAME_VALUE = 3;
+const int64_t UNKOWN_MIDGAME_VALUE = 2;
 const int64_t OTHER_MIDGAME_VALUE = 1;
-const int64_t TOTAL_MIDGAME_VALUE = ROOK_MIDGAME_VALUE * 4 + KNIGHT_CANNON_MIDGAME_VALUE * 8 + OTHER_MIDGAME_VALUE * 18;
+const int64_t TOTAL_MIDGAME_VALUE = ROOK_MIDGAME_VALUE * 4 + KNIGHT_CANNON_MIDGAME_VALUE * 8 + OTHER_MIDGAME_VALUE * 18  + UNKOWN_MIDGAME_VALUE * 30;
+// todo: 是否需要修改？
 const int64_t TOTAL_ADVANCED_VALUE = 4;
+// todo: 是否需要修改？
 const int64_t TOTAL_ATTACK_VALUE = 8;
 const int64_t ADVISOR_BISHOP_ATTACKLESS_VALUE = 80;
 const int64_t TOTAL_ADVISOR_LEAKAGE = 80;
@@ -343,7 +386,7 @@ static bool bInit = false;
 
 PreEvalStructEx PreEvalEx;
 
-void PositionStruct::PreEvaluate(void) {
+void PositionStruct::PreEvaluate() {
     int64_t i, sq, nMidgameValue, nWhiteAttacks, nBlackAttacks, nWhiteSimpleValue, nBlackSimpleValue;
     uint8_t ucvlPawnPiecesAttacking[256], ucvlPawnPiecesAttackless[256];
 
@@ -355,12 +398,13 @@ void PositionStruct::PreEvaluate(void) {
         }
     }
 
-    // 首先判断局势处于开中局还是残局阶段，方法是计算各种棋子的数量，按照车=6、马炮=3、其它=1相加。
+    // 首先判断局势处于开中局还是残局阶段，方法是计算各种棋子的数量，按照车=6、马炮=3、其它=1相加，揭棋算 2。
     nMidgameValue = PopCnt32(this->dwBitPiece & BOTH_BITPIECE(ADVISOR_BITPIECE | BISHOP_BITPIECE | PAWN_BITPIECE)) *
                     OTHER_MIDGAME_VALUE;
     nMidgameValue +=
             PopCnt32(this->dwBitPiece & BOTH_BITPIECE(KNIGHT_BITPIECE | CANNON_BITPIECE)) * KNIGHT_CANNON_MIDGAME_VALUE;
     nMidgameValue += PopCnt32(this->dwBitPiece & BOTH_BITPIECE(ROOK_BITPIECE)) * ROOK_MIDGAME_VALUE;
+    nMidgameValue += PopCnt32(this->dwBitPiece & BOTH_BITPIECE(UNKNOWN_BITPIECE)) * UNKOWN_MIDGAME_VALUE;
     // 使用二次函数，子力很少时才认为接近残局
     nMidgameValue = (2 * TOTAL_MIDGAME_VALUE - nMidgameValue) * nMidgameValue / TOTAL_MIDGAME_VALUE;
     __ASSERT_BOUND(0, nMidgameValue, TOTAL_MIDGAME_VALUE);
@@ -380,6 +424,10 @@ void PositionStruct::PreEvaluate(void) {
             PreEval.ucvlWhitePieces[5][sq] = PreEval.ucvlBlackPieces[5][SQUARE_FLIP(sq)] = (uint8_t)
                     ((cucvlCannonMidgame[sq] * nMidgameValue +
                       cucvlCannonEndgame[sq] * (TOTAL_MIDGAME_VALUE - nMidgameValue)) / TOTAL_MIDGAME_VALUE);
+            // 每个位置揭棋价值
+            PreEval.ucvlWhitePieces[7][sq] = PreEval.ucvlBlackPieces[3][SQUARE_FLIP(sq)] = (uint8_t)
+                    ((cucvlUnknownMidgame[sq] * nMidgameValue +
+                      cucvlUnknowEndgame[sq] * (TOTAL_MIDGAME_VALUE - nMidgameValue)) / TOTAL_MIDGAME_VALUE);
             ucvlPawnPiecesAttacking[sq] = PreEval.ucvlWhitePieces[0][sq];
             ucvlPawnPiecesAttackless[sq] = (uint8_t)
                     ((cucvlKingPawnMidgameAttackless[sq] * nMidgameValue +
@@ -394,7 +442,7 @@ void PositionStruct::PreEvaluate(void) {
         PreEvalEx.vlCentralThreat[i] = cvlCentralThreat[i];
     }
 
-    // 然后判断各方是否处于进攻状态，方法是计算各种过河棋子的数量，按照车马2炮兵1相加。
+    // 然后判断各方是否处于进攻状态，方法是计算各种过河棋子的数量，按照车马2炮兵1相加，士 2，相 1。
     nWhiteAttacks = nBlackAttacks = 0;
     for (i = SIDE_TAG(0) + KNIGHT_FROM; i <= SIDE_TAG(0) + ROOK_TO; i++) {
         if (this->ucsqPieces[i] != 0 && BLACK_HALF(this->ucsqPieces[i])) {
@@ -406,6 +454,17 @@ void PositionStruct::PreEvaluate(void) {
             nWhiteAttacks++;
         }
     }
+    for (i = SIDE_TAG(0) + ADVISOR_FROM; i <= SIDE_TAG(0) + ADVISOR_TO; i++) {
+        if (this->ucsqPieces[i] != 0 && BLACK_HALF(this->ucsqPieces[i])) {
+            nWhiteAttacks += 2;
+        }
+    }
+    for (i = SIDE_TAG(0) + BISHOP_FROM; i <= SIDE_TAG(0) + BISHOP_FROM; i++) {
+        if (this->ucsqPieces[i] != 0 && BLACK_HALF(this->ucsqPieces[i])) {
+            nWhiteAttacks++;
+        }
+    }
+
     for (i = SIDE_TAG(1) + KNIGHT_FROM; i <= SIDE_TAG(1) + ROOK_TO; i++) {
         if (this->ucsqPieces[i] != 0 && WHITE_HALF(this->ucsqPieces[i])) {
             nBlackAttacks += 2;
@@ -416,6 +475,17 @@ void PositionStruct::PreEvaluate(void) {
             nBlackAttacks++;
         }
     }
+    for (i = SIDE_TAG(1) + ADVISOR_FROM; i <= SIDE_TAG(1) + ADVISOR_TO; i++) {
+        if (this->ucsqPieces[i] != 0 && BLACK_HALF(this->ucsqPieces[i])) {
+            nBlackAttacks += 2;
+        }
+    }
+    for (i = SIDE_TAG(1) + BISHOP_FROM; i <= SIDE_TAG(1) + BISHOP_FROM; i++) {
+        if (this->ucsqPieces[i] != 0 && BLACK_HALF(this->ucsqPieces[i])) {
+            nBlackAttacks++;
+        }
+    }
+
     // 如果本方轻子数比对方多，那么每多一个轻子(车算2个轻子)威胁值加2。威胁值最多不超过8。
     nWhiteSimpleValue = PopCnt16(this->wBitPiece[0] & ROOK_BITPIECE) * 2 +
                         PopCnt16(this->wBitPiece[0] & (KNIGHT_BITPIECE | CANNON_BITPIECE));

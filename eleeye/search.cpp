@@ -42,7 +42,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "search.h"
 
 const int64_t IID_DEPTH = 2;         // 内部迭代加深的深度
-const int64_t SMP_DEPTH = 6;         // 并行搜索的深度
+//const int64_t SMP_DEPTH = 6;         // 并行搜索的深度
 const int64_t UNCHANGED_DEPTH = 4;   // 未改变最佳着法的深度
 
 const int64_t DROPDOWN_VALUE = 20;   // 落后的分值

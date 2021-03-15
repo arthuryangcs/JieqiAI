@@ -281,8 +281,8 @@ tuple<int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv) {
     __ASSERT_BOUND(0, pt, 15);
     this->zobr.Xor(PreGen.zobrTable[pt][sqDst], PreGen.zobrTable[pt][sqSrc]);
 
-    printf("move %lld %lld %lld %lld %d %lld\n", this->sdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
-    PrintBoard();
+//    printf("move %lld %lld %lld %lld %d %lld\n", this->sdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
+//    PrintBoard();
 
     return {pcCaptured, isUnknown, unknownCpt};
 }
