@@ -21,9 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <cstdio>
+#include <vector>
 #include "../base/base.h"
 #include "pregen.h"
 #include "position.h"
+
+using namespace std;
 
 /* ElephantEye源程序使用的匈牙利记号约定：
  *
@@ -63,9 +66,9 @@ const int64_t cnPieceTypes[64] = {
 // 棋子的简单分值，只在简单比较时作参考
 const int64_t cnSimpleValues[64] = {
         5, 2, 2, 2, 2, 3, 3, 4, 4, 3, 3, 2, 2, 2, 2, 2,
-        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0,
         5, 2, 2, 2, 2, 3, 3, 4, 4, 3, 3, 2, 2, 2, 2, 2,
-        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0,
+        5, 2, 2, 2, 2, 3, 3, 4, 4, 3, 3, 2, 2, 2, 2, 2,
+        5, 2, 2, 2, 2, 3, 3, 4, 4, 3, 3, 2, 2, 2, 2, 2,
 };
 
 // 该数组很方便地实现了坐标的镜像(左右对称)
@@ -195,12 +198,11 @@ void PositionStruct::AddPiece(int64_t sq, int64_t pc, bool bDel) {
 }
 
 // 移动棋子
-tuple<int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv) {
-    bool isUnknown = false;
-    int64_t unknownCpt = NO_PIECE;
-    int8_t truePcMoved;
-    int64_t sqSrc, sqDst, pcCaptured, pt;
-    int8_t pcMoved;
+// truePcMoved, unknownCpt 表示移动的棋子是揭棋翻开的棋子和被吃的是揭棋翻开的棋子。0 表示不是揭棋，-1 表示随机选择
+tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_t truePcMoved, int64_t unknownCpt) {
+    bool isUnknown = false, isUnknownPcCap = false;
+    int64_t sqSrc, sqDst, pt, pmt;
+    int8_t pcMoved, pcCaptured;
     uint8_t *lpucvl;
     // 移动棋子包括以下几个步骤：
 
@@ -208,23 +210,55 @@ tuple<int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv) {
     sqSrc = SRC(mv);
     sqDst = DST(mv);
     pcMoved = this->ucpcSquares[sqSrc];
+    pcCaptured = this->ucpcSquares[sqDst];
     __ASSERT_SQUARE(sqSrc);
     __ASSERT_SQUARE(sqDst);
     __ASSERT_PIECE(pcMoved);
 
-    if (IS_UNKNOWN(pcMoved)) {
-        auto it(this->unknownPieces[this->sdPlayer].begin());
-        advance(it, this->rc4Random.NextLong() % this->unknownPieces[this->sdPlayer].size());
-        truePcMoved = *it;
-        this->unknownPieces[this->sdPlayer].erase(truePcMoved);
-        this->unknownOppositePieces[1-this->sdPlayer].erase(truePcMoved);
-        isUnknown = true;
-    } else {
+    isUnknown = IS_UNKNOWN(pcMoved);
+    isUnknownPcCap = IS_UNKNOWN(pcCaptured);
+
+    if (isUnknown) {
+        if (truePcMoved == 0) {
+            return {false, 0, false, 0};
+        }
+        if (truePcMoved == -1) {
+            auto it(this->unknownPieces[this->sdPlayer].begin());
+            advance(it, this->rc4Random.NextLong() % this->unknownPieces[this->sdPlayer].size());
+            truePcMoved = *it;
+        }
+    } else if (truePcMoved == -1 || truePcMoved == 0) {
         truePcMoved = pcMoved;
+    } else if (truePcMoved != 0) {
+        return {false, 0, false, 0};
     }
     __ASSERT_PIECE(truePcMoved);
 
-    pcCaptured = this->ucpcSquares[sqDst];
+    if (pcCaptured == NO_PIECE && (unknownCpt != 0 && unknownCpt != -1)) {
+        return {false, 0, false, 0};
+    }
+
+    if (isUnknownPcCap) {
+        if (unknownCpt == 0) {
+            return {false, 0, false, 0};
+        }
+        if (unknownCpt == -1) {
+            auto it(this->unknownOppositePieces[this->sdPlayer].begin());
+            advance(it, this->rc4Random.NextLong() % this->unknownOppositePieces[this->sdPlayer].size());
+            unknownCpt = *it;
+        }
+    }
+
+    if (isUnknown) {
+        this->unknownPieces[this->sdPlayer].erase(truePcMoved);
+        this->unknownOppositePieces[1-this->sdPlayer].erase(truePcMoved);
+        if (pcMoved < 32) {
+            this->vlWhite += PreEval.ucvlWhitePieces[PIECE_TYPE(truePcMoved)][sqDst] - PreEval.ucvlWhitePieces[PIECE_TYPE(pcMoved)][sqSrc];
+        } else {
+            this->vlBlack += PreEval.ucvlBlackPieces[PIECE_TYPE(truePcMoved)][sqDst] - PreEval.ucvlBlackPieces[PIECE_TYPE(pcMoved)][sqSrc];
+        }
+    }
+
     if (pcCaptured == NO_PIECE) {
         // 2. 如果没有被吃的棋子，那么更新目标格的位行和位列。
         //    换句话说，有被吃的棋子，目标格的位行和位列就不必更新了。
@@ -240,19 +274,16 @@ tuple<int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv) {
         this->dwBitPiece ^= BIT_PIECE(pcCaptured);
         pt = PIECE_TYPE(pcCaptured);
 
-        if (IS_UNKNOWN(pcCaptured)) {
+        if (isUnknownPcCap) {
             this->unknownEatCount[1 - this->sdPlayer]++;
-            auto it(this->unknownOppositePieces[this->sdPlayer].begin());
-            advance(it, this->rc4Random.NextLong() % this->unknownOppositePieces[this->sdPlayer].size());
-            this->unknownOppositePieces[this->sdPlayer].erase(*it);
-            this->unknownEatPieces[this->sdPlayer].insert(*it);
-            unknownCpt = *it;
+            this->unknownOppositePieces[this->sdPlayer].erase(unknownCpt);
+            this->unknownEatPieces[this->sdPlayer].insert(unknownCpt);
         }
 
         if (pcCaptured < 32) {
-            this->vlWhite -= PreEval.ucvlWhitePieces[pt][sqDst];
+            this->vlWhite -= 2 * PreEval.ucvlWhitePieces[pt][sqDst];
         } else {
-            this->vlBlack -= PreEval.ucvlBlackPieces[pt][sqDst];
+            this->vlBlack -= 2 * PreEval.ucvlBlackPieces[pt][sqDst];
             pt += 8;
         }
         __ASSERT_BOUND(0, pt, 15);
@@ -270,7 +301,7 @@ tuple<int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv) {
     __ASSERT_BITRANK(this->wBitRanks[RANK_Y(sqSrc)]);
     __ASSERT_BITFILE(this->wBitRanks[FILE_X(sqSrc)]);
     pt = PIECE_TYPE(pcMoved);
-    if (pcMoved < 32) {
+    if (pcMoved < 32 && !isUnknown) {
         lpucvl = PreEval.ucvlWhitePieces[pt];
         this->vlWhite += lpucvl[sqDst] - lpucvl[sqSrc];
     } else {
@@ -284,13 +315,13 @@ tuple<int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv) {
 //    printf("move %lld %lld %lld %lld %d %lld\n", this->sdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
 //    PrintBoard();
 
-    return {pcCaptured, isUnknown, unknownCpt};
+    return {true, pcCaptured, isUnknown, unknownCpt};
 }
 
 // 撤消移动棋子
 void PositionStruct::UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknown, int64_t unknownCpt) {
     int64_t sqSrc, sqDst;
-    int64_t sdPlayer = 0;
+    int64_t trueSdPlayer = 0;
     int8_t pcMoved;
     sqSrc = SRC(mv);
     sqDst = DST(mv);
@@ -299,15 +330,15 @@ void PositionStruct::UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknow
     __ASSERT_SQUARE(sqDst);
     __ASSERT_PIECE(pcMoved);
 
-    if(!IS_SAME_SIDE(pcMoved, OPP_SIDE_TAG(sdPlayer))) {
-        sdPlayer = 1;
+    if(!IS_SAME_SIDE(pcMoved, OPP_SIDE_TAG(trueSdPlayer))) {
+        trueSdPlayer = 1;
     }
 
     if (isUnknown) {
-        this->unknownPieces[1 - sdPlayer].insert(pcMoved);
-        this->unknownOppositePieces[sdPlayer].insert(pcMoved);
+        this->unknownPieces[1 - trueSdPlayer].insert(pcMoved);
+        this->unknownOppositePieces[trueSdPlayer].insert(pcMoved);
         this->ucsqPieces[pcMoved] = 0;
-        pcMoved = UNKNOWN_PIECE_TYPE(sqSrc) + 15 + SIDE_TAG(1 - sdPlayer);
+        pcMoved = UNKNOWN_PIECE_TYPE(sqSrc) + 15 + SIDE_TAG(1 - trueSdPlayer);
         __ASSERT_PIECE(pcMoved);
     }
 
@@ -319,9 +350,9 @@ void PositionStruct::UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknow
     __ASSERT_BITFILE(this->wBitRanks[FILE_X(sqSrc)]);
     if (pcCaptured > NO_PIECE) {
         if (IS_UNKNOWN(pcCaptured)) {
-            this->unknownEatCount[sdPlayer]--;
-            this->unknownOppositePieces[1 - sdPlayer].insert(unknownCpt);
-            this->unknownEatPieces[1 - sdPlayer].erase(unknownCpt);
+            this->unknownEatCount[trueSdPlayer]--;
+            this->unknownOppositePieces[1 - trueSdPlayer].insert(unknownCpt);
+            this->unknownEatPieces[1 - trueSdPlayer].erase(unknownCpt);
         }
 
         __ASSERT_PIECE(pcCaptured);
@@ -336,7 +367,7 @@ void PositionStruct::UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknow
         __ASSERT_BITFILE(this->wBitRanks[FILE_X(sqDst)]);
     }
 
-//    printf("undo move %lld %lld %lld %lld %d %lld\n", this->sdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
+//    printf("undo move %lld %lld %lld %lld %d %lld\n", this->trueSdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
 //    PrintBoard();
 }
 
@@ -405,9 +436,8 @@ void PositionStruct::UndoPromote(int64_t sq, int64_t pcCaptured) {
 // 以下是一些着法处理过程
 
 // 执行一个着法
-bool PositionStruct::MakeMove(int64_t mv) {
-    bool isUnknown;
-    int64_t unknownCpt;
+bool PositionStruct::MakeMove(int64_t mv, int64_t truePcMoved, int64_t unknownCpt) {
+    bool isUnknown, legal;
     int64_t sq, pcCaptured;
     uint32_t dwOldZobristKey;
     RollbackStruct *lprbs;
@@ -428,10 +458,14 @@ bool PositionStruct::MakeMove(int64_t mv) {
 //    if (sq == DST(mv)) {
 //        pcCaptured = Promote(sq);
 //    } else {
-    auto tup = MovePiece(mv);
-    pcCaptured = get<0>(tup);
-    isUnknown = get<1>(tup);
-    unknownCpt = get<2>(tup);
+    auto tup = MovePiece(mv, truePcMoved, unknownCpt);
+    legal = get<0>(tup);
+    pcCaptured = get<1>(tup);
+    isUnknown = get<2>(tup);
+    unknownCpt = get<3>(tup);
+    if (!legal) {
+        return false;
+    }
 
     // 3. 如果移动后被将军了，那么着法是非法的，撤消该着法
     if (CheckedBy(CHECK_LAZY) > 0) {
@@ -1067,6 +1101,9 @@ inline void SetPerpCheck(uint32_t &dwPerpCheck, int64_t nChkChs) {
 
 // 重复局面检测
 int64_t PositionStruct::RepStatus(int64_t nRecur) const {
+    // todo
+    return REP_NONE;
+
     // 参数"nRecur"指重复次数，在搜索中取1以提高搜索效率(默认值)，根结点处取3以适应规则
     int64_t sd;
     uint32_t dwPerpCheck, dwOppPerpCheck;
@@ -1117,3 +1154,20 @@ int64_t PositionStruct::RepStatus(int64_t nRecur) const {
 }
 
 // 以上是一些着法检测过程
+
+// 生成所有可能的揭棋翻棋情况
+vector<pair<int64_t, int64_t>> PositionStruct::GenUnknownPos() const {
+    vector<pair<int64_t, int64_t>> v;
+    for (const auto a : this->unknownPieces[this->sdPlayer]) {
+        for (const auto b : this->unknownOppositePieces[this->sdPlayer]) {
+            v.emplace_back(a, b);
+        }
+        v.emplace_back(a, 0);
+    }
+    for (const auto b : this->unknownOppositePieces[this->sdPlayer]) {
+        v.emplace_back(0, b);
+    }
+    v.emplace_back(0, 0);
+    return v;
+}
+

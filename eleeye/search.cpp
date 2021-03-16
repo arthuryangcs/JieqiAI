@@ -22,7 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef CCHESS_A3800
 
-#include <stdio.h>
+#include <cstdio>
+#include <map>
 
 #endif
 
@@ -601,13 +602,30 @@ static int64_t SearchRoot(int64_t nDepth) {
 
     // 2. 逐一搜索每个着法(要过滤禁止着法)
     nCurrMove = 0;
+
     while ((mv = Search2.MoveSort.NextRoot()) != 0) {
-        if (Search.pos.MakeMove(mv)) {
 #ifndef CCHESS_A3800
+        map<pair<int64_t, int64_t>, int64_t> pieceTypeVal;
+        int64_t count = 0, valSum = 0;
+        for (const auto &p : Search.pos.GenUnknownPos()) {
+            if (pieceTypeVal.find(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second))) != pieceTypeVal.end()) {
+                count++;
+                valSum += pieceTypeVal.find(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second)))->second;
+                continue;
+            }
+            if (!Search.pos.MakeMove(mv, p.first, p.second)) {
+                // 移动不合法
+                continue;
+            }
+
+            // todo
+//            Search.pos.PrintBoard();
+//            printf("%lld %lld %lld %lld %lld\n", mv, p.first, p.second, PIECE_TYPE(p.first), PIECE_TYPE(p.second));
+
             if (Search2.bPopCurrMove || Search.bDebug) {
                 dwMoveStr = MOVE_COORD(mv);
                 nCurrMove++;
-                printf("info currmove %.4s currmovenumber %d\n", (const char *) &dwMoveStr, nCurrMove);
+                printf("info currmove %.4s currmovenumber %lld\n", (const char *) &dwMoveStr, nCurrMove);
                 fflush(stdout);
             }
 #endif
@@ -626,33 +644,50 @@ static int64_t SearchRoot(int64_t nDepth) {
                 }
             }
             Search.pos.UndoMakeMove();
-            if (Search2.bStop) {
-                return vlBest;
-            }
 
-            // 5. Alpha-Beta边界判定("vlBest"代替了"SearchPV()"中的"vlAlpha")
-            if (vl > vlBest) {
+            count++;
+            valSum += vl;
+            pieceTypeVal.emplace(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second)), vl);
 
-                // 6. 如果搜索到第一着法，那么"未改变最佳着法"的计数器加1，否则清零
-                Search2.nUnchanged = (vlBest == -MATE_VALUE ? Search2.nUnchanged + 1 : 0);
-                vlBest = vl;
+            printf("this piece val: %lld\n", vl);
+        }
 
-                // 7. 搜索到最佳着法时记录主要变例
-                AppendPvLine(Search2.wmvPvLine, mv, wmvPvLine);
+        vl = valSum / count;
+
+        // todo
+        printf("move: %lld\n", mv);
+        Search.pos.MakeMove(mv);
+        Search.pos.PrintBoard();
+        Search.pos.UndoMakeMove();
+        printf("%lld count: %lld, val sum: %lld\n", nDepth, count, valSum);
+        printf("%lld this move val: %lld\n\n", nDepth, vl);
+
+        if (Search2.bStop) {
+            return vlBest;
+        }
+
+        // 5. Alpha-Beta边界判定("vlBest"代替了"SearchPV()"中的"vlAlpha")
+        if (vl > vlBest) {
+
+            // 6. 如果搜索到第一着法，那么"未改变最佳着法"的计数器加1，否则清零
+            Search2.nUnchanged = (vlBest == -MATE_VALUE ? Search2.nUnchanged + 1 : 0);
+            vlBest = vl;
+
+            // 7. 搜索到最佳着法时记录主要变例
+            AppendPvLine(Search2.wmvPvLine, mv, wmvPvLine);
 #ifndef CCHESS_A3800
-                PopPvLine(nDepth, vl);
+            PopPvLine(nDepth, vl);
 #endif
 
-                // 8. 如果要考虑随机性，则Alpha值要作随机浮动，但已搜索到杀棋时不作随机浮动
-                if (vlBest > -WIN_VALUE && vlBest < WIN_VALUE) {
-                    vlBest += (Search.rc4Random.NextLong() & Search.nRandomMask) -
-                              (Search.rc4Random.NextLong() & Search.nRandomMask);
-                    vlBest = (vlBest == Search.pos.DrawValue() ? vlBest - 1 : vlBest);
-                }
-
-                // 9. 更新根结点着法列表
-                Search2.MoveSort.UpdateRoot(mv);
+            // 8. 如果要考虑随机性，则Alpha值要作随机浮动，但已搜索到杀棋时不作随机浮动
+            if (vlBest > -WIN_VALUE && vlBest < WIN_VALUE) {
+                vlBest += (Search.rc4Random.NextLong() & Search.nRandomMask) -
+                          (Search.rc4Random.NextLong() & Search.nRandomMask);
+                vlBest = (vlBest == Search.pos.DrawValue() ? vlBest - 1 : vlBest);
             }
+
+            // 9. 更新根结点着法列表
+            Search2.MoveSort.UpdateRoot(mv);
         }
     }
     return vlBest;
@@ -780,7 +815,7 @@ void SearchMain(int64_t nDepth) {
         // 需要输出主要变例时，第一个"info depth n"是不输出的
 #ifndef CCHESS_A3800
         if (Search2.bPopPv || Search.bDebug) {
-            printf("info depth %d\n", i);
+            printf("info depth %lld\n", i);
             fflush(stdout);
         }
 

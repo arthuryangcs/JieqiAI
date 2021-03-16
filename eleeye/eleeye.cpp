@@ -36,7 +36,7 @@ inline void PrintLn(const char *sz) {
     fflush(stdout);
 }
 
-int main(void) {
+int main() {
     int i;
     bool bPonderTime;
     UcciCommStruct UcciComm;

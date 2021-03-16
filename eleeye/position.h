@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../base/base.h"
 #include "pregen.h"
 #include "set"
+#include <vector>
 
 /* ElephantEye源程序使用的匈牙利记号约定：
 *
@@ -330,12 +331,12 @@ struct PositionStruct {
 // "ClearBoard()"后面紧跟的是"SetIrrev()"，来初始化其它成员
     }
 
-    void ChangeSide(void) { // 交换走棋方
+    void ChangeSide() { // 交换走棋方
         sdPlayer = OPP_SIDE(sdPlayer);
         zobr.Xor(PreGen.zobrPlayer);
     }
 
-    void SaveStatus(void) { // 保存状态
+    void SaveStatus() { // 保存状态
         RollbackStruct *lprbs;
         lprbs = rbsList + nMoveNum;
         lprbs->zobr = zobr;
@@ -343,7 +344,7 @@ struct PositionStruct {
         lprbs->vlBlack = vlBlack;
     }
 
-    void Rollback(void) {   // 回滚
+    void Rollback() {   // 回滚
         RollbackStruct *lprbs;
         lprbs = rbsList + nMoveNum;
         zobr = lprbs->zobr;
@@ -352,17 +353,17 @@ struct PositionStruct {
     }
 
     void AddPiece(int64_t sq, int64_t pc, bool bDel = false); // 棋盘上增加棋子
-    tuple<int64_t, bool, int64_t> MovePiece(int64_t mv);                            // 移动棋子
+    tuple<bool, int64_t, bool, int64_t> MovePiece(int64_t mv, int64_t truePcMoved = -1, int64_t unknownCpt = -1);                            // 移动棋子
     void UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknown, int64_t unknownCap);       // 撤消移动棋子
     int64_t Promote(int64_t sq);                              // 升变
     void UndoPromote(int64_t sq, int64_t pcCaptured);         // 撤消升变
 
 // 着法处理过程
-    bool MakeMove(int64_t mv);   // 执行一个着法
-    void UndoMakeMove(void); // 撤消一个着法
-    void NullMove(void);     // 执行一个空着
-    void UndoNullMove(void); // 撤消一个空着
-    void SetIrrev(void) {    // 把局面设成“不可逆”，即清除回滚着法
+    bool MakeMove(int64_t mv, int64_t truePcMoved = -1, int64_t unknownCpt = -1);   // 执行一个着法
+    void UndoMakeMove(); // 撤消一个着法
+    void NullMove();     // 执行一个空着
+    void UndoNullMove(); // 撤消一个空着
+    void SetIrrev() {    // 把局面设成“不可逆”，即清除回滚着法
         rbsList[0].mvs.dwmv = 0; // wmv, Chk, Drw, ChkChs = 0
         rbsList[0].mvs.ChkChs = CheckedBy();
         nMoveNum = 1;
@@ -454,6 +455,8 @@ struct PositionStruct {
     int64_t Evaluate(int64_t vlAlpha, int64_t vlBeta) const;
 
     void PrintBoard() const;
+
+    vector<pair<int64_t, int64_t>> GenUnknownPos() const;
 }; // pos
 
 #endif
