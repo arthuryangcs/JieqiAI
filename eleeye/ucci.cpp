@@ -46,10 +46,10 @@ static bool ParsePos(UcciCommStruct &UcciComm, char *lp) {
     UcciComm.nMoveNum = 0;
     if (StrScanSkip(lp, " moves ")) {
         *(lp - strlen(" moves ")) = '\0';
-        UcciComm.nMoveNum = MIN((int) (strlen(lp) + 1) / 5, MAX_MOVE_NUM); // 提示："moves"后面的每个着法都是1个空格和4个字符
+        UcciComm.nMoveNum = MIN((int) (strlen(lp) + 1) / 7, MAX_MOVE_NUM); // 提示："moves"后面的每个着法都是1个空格和4个字符
         for (i = 0; i < UcciComm.nMoveNum; i++) {
             dwCoordList[i] = *(uint32_t *) lp; // 4个字符可转换为一个"uint32_t"，存储和处理起来方便
-            lp += sizeof(uint32_t) + 1;
+            lp += sizeof(uint32_t) + 3;
         }
         UcciComm.lpdwMovesCoord = dwCoordList;
     }

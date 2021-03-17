@@ -234,18 +234,22 @@ tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_
     }
     __ASSERT_PIECE(truePcMoved);
 
-    if (pcCaptured == NO_PIECE && (unknownCpt != 0 && unknownCpt != -1)) {
-        return {false, 0, false, 0};
-    }
-
-    if (isUnknownPcCap) {
-        if (unknownCpt == 0) {
+    if (pcCaptured == NO_PIECE) {
+        if (unknownCpt != 0 && unknownCpt != -1) {
             return {false, 0, false, 0};
         }
-        if (unknownCpt == -1) {
-            auto it(this->unknownOppositePieces[this->sdPlayer].begin());
-            advance(it, this->rc4Random.NextLong() % this->unknownOppositePieces[this->sdPlayer].size());
-            unknownCpt = *it;
+    } else {
+        if (isUnknownPcCap) {
+            if (unknownCpt == 0) {
+                return {false, 0, false, 0};
+            }
+            if (unknownCpt == -1) {
+                auto it(this->unknownOppositePieces[this->sdPlayer].begin());
+                advance(it, this->rc4Random.NextLong() % this->unknownOppositePieces[this->sdPlayer].size());
+                unknownCpt = *it;
+            }
+        } else if (unknownCpt != 0 && unknownCpt != -1){
+            return {false, 0, false, 0};
         }
     }
 
@@ -281,9 +285,15 @@ tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_
         }
 
         if (pcCaptured < 32) {
-            this->vlWhite -= 2 * PreEval.ucvlWhitePieces[pt][sqDst];
+            if (pt == 7) {
+                this->vlWhite -= 50;
+            }
+            this->vlWhite -= PreEval.ucvlWhitePieces[pt][sqDst];
         } else {
-            this->vlBlack -= 2 * PreEval.ucvlBlackPieces[pt][sqDst];
+            if (pt == 7) {
+                this->vlBlack -= 50;
+            }
+            this->vlBlack -= PreEval.ucvlBlackPieces[pt][sqDst];
             pt += 8;
         }
         __ASSERT_BOUND(0, pt, 15);
@@ -310,9 +320,9 @@ tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_
         pt += 8;
     }
     __ASSERT_BOUND(0, pt, 15);
-    this->zobr.Xor(PreGen.zobrTable[pt][sqDst], PreGen.zobrTable[pt][sqSrc]);
+    this->zobr.Xor(PreGen.zobrTable[PIECE_TYPE(truePcMoved)][sqDst], PreGen.zobrTable[pt][sqSrc]);
 
-//    printf("move %lld %lld %lld %lld %d %lld\n", this->sdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
+//    printf("move %lld %lld %lld %d %d %lld\n", this->sdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
 //    PrintBoard();
 
     return {true, pcCaptured, isUnknown, unknownCpt};
@@ -1067,7 +1077,7 @@ int64_t PositionStruct::CheckedBy(bool bLazy) const {
 }
 
 // 判断是否被将死
-bool PositionStruct::IsMate(void) {
+bool PositionStruct::IsMate() {
     int64_t i, nGenNum;
     MoveStruct mvsGen[MAX_GEN_MOVES];
     nGenNum = GenCapMoves(mvsGen);

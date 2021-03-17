@@ -426,6 +426,10 @@ struct PositionStruct {
     }
 
     int64_t Material(void) const {               // 子力平衡，包括先行权因素
+//        if (SIDE_VALUE(sdPlayer, vlWhite - vlBlack) + PreEval.vlAdvanced == -136) {
+//            printf("best val\n");
+//            this->PrintBoard();
+//        }
         return SIDE_VALUE(sdPlayer, vlWhite - vlBlack) + PreEval.vlAdvanced;
     }
 

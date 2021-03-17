@@ -162,7 +162,7 @@ static const int64_t cnAdvisorMoveTab[4] = {-0x11, -0x0f, +0x0f, +0x11};
 static const int64_t cnBishopMoveTab[4] = {-0x22, -0x1e, +0x1e, +0x22};
 static const int64_t cnKnightMoveTab[8] = {-0x21, -0x1f, -0x12, -0x0e, +0x0e, +0x12, +0x1f, +0x21};
 
-void PreGenInit(void) {
+void PreGenInit() {
     int64_t i, j, k, n, sqSrc, sqDst;
     RC4Struct rc4;
     SlideMoveStruct smv;
@@ -171,7 +171,7 @@ void PreGenInit(void) {
     // 首先初始化Zobrist键值表
     rc4.InitZero();
     PreGen.zobrPlayer.InitRC4(rc4);
-    for (i = 0; i < 14; i++) {
+    for (i = 0; i < 16; i++) {
         for (j = 0; j < 256; j++) {
             PreGen.zobrTable[i][j].InitRC4(rc4);
         }

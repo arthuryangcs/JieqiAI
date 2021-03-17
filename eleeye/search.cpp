@@ -302,7 +302,7 @@ static int64_t SearchQuiesc(PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta
 
     // 10. 返回分值。
     if (vlBest == -MATE_VALUE) {
-        __ASSERT(pos.IsMate());
+//        __ASSERT(pos.IsMate());
         return pos.nDistance - MATE_VALUE;
     } else {
 #ifdef HASH_QUIESC
@@ -589,7 +589,7 @@ static int64_t SearchPV(int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, uint16_
  * 6. 不更新历史表和杀手着法表。
  */
 static int64_t SearchRoot(int64_t nDepth) {
-    int64_t nNewDepth, vlBest, vl, mv, nCurrMove;
+    int64_t nNewDepth, vlBest, vlBestBest, vl, mv, nCurrMove;
 #ifndef CCHESS_A3800
     uint32_t dwMoveStr;
 #endif
@@ -598,6 +598,7 @@ static int64_t SearchRoot(int64_t nDepth) {
 
     // 1. 初始化
     vlBest = -MATE_VALUE;
+    vlBestBest = -MATE_VALUE;
     Search2.MoveSort.ResetRoot();
 
     // 2. 逐一搜索每个着法(要过滤禁止着法)
@@ -608,15 +609,16 @@ static int64_t SearchRoot(int64_t nDepth) {
         map<pair<int64_t, int64_t>, int64_t> pieceTypeVal;
         int64_t count = 0, valSum = 0;
         for (const auto &p : Search.pos.GenUnknownPos()) {
-            if (pieceTypeVal.find(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second))) != pieceTypeVal.end()) {
-                count++;
-                valSum += pieceTypeVal.find(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second)))->second;
-                continue;
-            }
+//            if (pieceTypeVal.find(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second))) != pieceTypeVal.end()) {
+//                count++;
+//                valSum += pieceTypeVal.find(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second)))->second;
+//                continue;
+//            }
             if (!Search.pos.MakeMove(mv, p.first, p.second)) {
                 // 移动不合法
                 continue;
             }
+            vlBest = -MATE_VALUE;
 
             // todo
 //            Search.pos.PrintBoard();
@@ -649,7 +651,7 @@ static int64_t SearchRoot(int64_t nDepth) {
             valSum += vl;
             pieceTypeVal.emplace(make_pair(PIECE_TYPE(p.first), PIECE_TYPE(p.second)), vl);
 
-            printf("this piece val: %lld\n", vl);
+            printf("%lld %lld %lld %lld this piece val: %lld\n", PIECE_TYPE(p.first), PIECE_TYPE(p.second), Search.pos.vlWhite, Search.pos.vlBlack, vl);
         }
 
         vl = valSum / count;
@@ -663,15 +665,15 @@ static int64_t SearchRoot(int64_t nDepth) {
         printf("%lld this move val: %lld\n\n", nDepth, vl);
 
         if (Search2.bStop) {
-            return vlBest;
+            return vlBestBest;
         }
 
         // 5. Alpha-Beta边界判定("vlBest"代替了"SearchPV()"中的"vlAlpha")
-        if (vl > vlBest) {
+        if (vl > vlBestBest) {
 
             // 6. 如果搜索到第一着法，那么"未改变最佳着法"的计数器加1，否则清零
-            Search2.nUnchanged = (vlBest == -MATE_VALUE ? Search2.nUnchanged + 1 : 0);
-            vlBest = vl;
+            Search2.nUnchanged = (vlBestBest == -MATE_VALUE ? Search2.nUnchanged + 1 : 0);
+            vlBestBest = vl;
 
             // 7. 搜索到最佳着法时记录主要变例
             AppendPvLine(Search2.wmvPvLine, mv, wmvPvLine);
@@ -680,17 +682,17 @@ static int64_t SearchRoot(int64_t nDepth) {
 #endif
 
             // 8. 如果要考虑随机性，则Alpha值要作随机浮动，但已搜索到杀棋时不作随机浮动
-            if (vlBest > -WIN_VALUE && vlBest < WIN_VALUE) {
-                vlBest += (Search.rc4Random.NextLong() & Search.nRandomMask) -
+            if (vlBestBest > -WIN_VALUE && vlBestBest < WIN_VALUE) {
+                vlBestBest += (Search.rc4Random.NextLong() & Search.nRandomMask) -
                           (Search.rc4Random.NextLong() & Search.nRandomMask);
-                vlBest = (vlBest == Search.pos.DrawValue() ? vlBest - 1 : vlBest);
+                vlBestBest = (vlBestBest == Search.pos.DrawValue() ? vlBestBest - 1 : vlBestBest);
             }
 
             // 9. 更新根结点着法列表
             Search2.MoveSort.UpdateRoot(mv);
         }
     }
-    return vlBest;
+    return vlBestBest;
 }
 
 // 唯一着法检验是ElephantEye在搜索上的一大特色，用来判断用以某种深度进行的搜索是否找到了唯一着法。

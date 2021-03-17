@@ -1,4 +1,4 @@
 ucci
 position fen 5k5/9/9/9/9/5p5/5X5/9/9/5K5 w rrnnbbaaccppppp  rrnnbbaaccppppp  - - 0 1
-go depth 5
+go depth 4
 quit

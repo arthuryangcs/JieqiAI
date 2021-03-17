@@ -580,6 +580,9 @@ int64_t PositionStruct::Evaluate(int64_t vlAlpha, int64_t vlBeta) const {
 
     // 1. 四级偷懒评价(彻底偷懒评价)，只包括子力平衡；
     vl = this->Material();
+    // todo
+    return vl;
+
     if (vl + EVAL_MARGIN1 <= vlAlpha) {
         return vl + EVAL_MARGIN1;
     } else if (vl - EVAL_MARGIN1 >= vlBeta) {

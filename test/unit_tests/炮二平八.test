@@ -1,4 +1,4 @@
 ucci
 position fen xxxxkxxxx/9/7x1/x1x1x1x1x/9/9/X1X1X1X1X/1c2P2X1/9/XX1XKXXXX w rrnnbbaaccppppp  rrnnbbaaccppppp  - - 0 1
-go depth 5
+go depth 4
 quit
