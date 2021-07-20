@@ -82,7 +82,7 @@ union UcciCommStruct {
     struct {
         const char *szFenStr;     // FEN串，特殊局面(如"startpos"等)也由解释器最终转换成FEN串
         int64_t nMoveNum;             // 后续着法数
-        uint32_t *lpdwMovesCoord; // 后续着法，指向程序"IdleLine()"中的一个静态数组，但可以把"CoordList"本身看成数组
+        uint64_t *lpdwMovesCoord; // 后续着法，指向程序"IdleLine()"中的一个静态数组，但可以把"CoordList"本身看成数组
     };
 
     /* 3. "banmoves"指令传递的信息，适合于"e_CommBanMoves"指令类型
@@ -90,7 +90,7 @@ union UcciCommStruct {
      */
     struct {
         int64_t nBanMoveNum;
-        uint32_t *lpdwBanMovesCoord;
+        uint64_t *lpdwBanMovesCoord;
     };
 
     /* 4. "go"指令传递的信息，适合于"UCCI_COMM_GO指令类型

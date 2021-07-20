@@ -20,7 +20,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <string.h>
+#include <cstring>
 #include "../base/base.h"
 #include "pregen.h"
 #include "set"
@@ -231,7 +231,7 @@ inline uint32_t MOVE_COORD(int64_t mv) {      // 把着法转换成字符串
     return Ret.dw;
 }
 
-inline int64_t COORD_MOVE(uint32_t dwMoveStr) { // 把字符串转换成着法
+inline int64_t COORD_MOVE(uint64_t dwMoveStr) { // 把字符串转换成着法
     int64_t sqSrc, sqDst;
     char *lpArgPtr;
     lpArgPtr = (char *) &dwMoveStr;
@@ -261,6 +261,12 @@ struct RollbackStruct {
     MoveStruct mvs;       // 着法
 }; // rbs
 
+struct UnknownPos {
+    int64_t first[300];
+    int64_t second[300];
+    int64_t count;
+};
+
 const bool DEL_PIECE = true; // 函数"PositionStruct::AddPiece()"的选项
 
 // 局面结构
@@ -269,10 +275,13 @@ struct PositionStruct {
     int64_t sdPlayer;                          // 轮到哪方走，0表示红方，1表示黑方
     int8_t ucpcSquares[256];                   // 每个格子放的棋子，-1表示没有棋子
     uint8_t ucsqPieces[64];                    // 每个棋子放的位置，0表示被吃
+    int64_t unknownEatenCount[2];                // 每方被吃的暗棋数量
     int64_t unknownEatCount[2];                // 每方被吃的暗棋数量
-    set<int64_t> unknownEatPieces[2];          // 每方吃的暗棋
-    set<int64_t> unknownPieces[2];             // 每方可能的暗棋
-    set<int64_t> unknownOppositePieces[2];     // 每方对方可能的暗棋
+    bool unknownEatPieces[2][64];          // 每方吃的暗棋
+    int64_t unknownCount[2];
+    bool unknownPieces[2][64];             // 每方可能的暗棋
+    int64_t unknownOppositeCount[2];
+    bool unknownOppositePieces[2][64];     // 每方对方可能的暗棋
     RC4Struct rc4Random;                       // 随机数
 
     ZobristStruct zobr;          // Zobrist
@@ -320,13 +329,13 @@ struct PositionStruct {
         memset(wBitRanks, 0, 16 * sizeof(uint16_t));
         memset(wBitFiles, 0, 16 * sizeof(uint16_t));
         vlWhite = vlBlack = 0;
-        unknownPieces[0].clear();
-        unknownPieces[1].clear();
-        unknownEatPieces[0].clear();
-        unknownEatPieces[1].clear();
-        unknownOppositePieces[0].clear();
-        unknownOppositePieces[1].clear();
+        memset(unknownPieces, 0, sizeof unknownPieces);
+        memset(unknownEatPieces, 0, sizeof unknownEatPieces);
+        memset(unknownOppositePieces, 0, sizeof unknownOppositePieces);
+        unknownEatenCount[0] = unknownEatenCount[1] = 0;
+        unknownCount[0] = unknownCount[1] = 0;
         unknownEatCount[0] = unknownEatCount[1] = 0;
+        unknownOppositeCount[0] = unknownOppositeCount[1] = 0;
         rc4Random.InitRand();
 // "ClearBoard()"后面紧跟的是"SetIrrev()"，来初始化其它成员
     }
@@ -353,7 +362,16 @@ struct PositionStruct {
     }
 
     void AddPiece(int64_t sq, int64_t pc, bool bDel = false); // 棋盘上增加棋子
-    tuple<bool, int64_t, bool, int64_t> MovePiece(int64_t mv, int64_t truePcMoved = -1, int64_t unknownCpt = -1);                            // 移动棋子
+
+    struct MoveResultStruct {
+        bool canMove;
+        int64_t pcCaptured;
+        bool isUnknown;
+        int64_t unknownCpt;
+    };
+
+    MoveResultStruct
+    MovePiece(int64_t mv, int64_t truePcMoved = -1, int64_t unknownCpt = -1);                            // 移动棋子
     void UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknown, int64_t unknownCap);       // 撤消移动棋子
     int64_t Promote(int64_t sq);                              // 升变
     void UndoPromote(int64_t sq, int64_t pcCaptured);         // 撤消升变
@@ -392,30 +410,30 @@ struct PositionStruct {
 
     bool LegalMove(int64_t mv) const;            // 着法合理性检测，仅用在“杀手着法”的检测中
     int64_t CheckedBy(bool bLazy = false) const; // 被哪个子将军
-    bool IsMate(void);                       // 判断是已被将死
-    MoveStruct LastMove(void) const {        // 前一步着法，该着法保存了局面的将军状态
+    bool IsMate();                       // 判断是已被将死
+    MoveStruct LastMove() const {        // 前一步着法，该着法保存了局面的将军状态
         return rbsList[nMoveNum - 1].mvs;
     }
 
-    bool CanPromote(void) const {            // 判断是否能升变
+    bool CanPromote() const {            // 判断是否能升变
         return (wBitPiece[sdPlayer] & PAWN_BITPIECE) != PAWN_BITPIECE && LastMove().ChkChs <= 0;
     }
 
-    bool NullOkay(void) const {              // 允许使用空着裁剪的条件
+    bool NullOkay() const {              // 允许使用空着裁剪的条件
         return (sdPlayer == 0 ? vlWhite : vlBlack) > NULLOKAY_MARGIN;
     }
 
-    bool NullSafe(void) const {              // 空着裁剪可以不检验的条件
+    bool NullSafe() const {              // 空着裁剪可以不检验的条件
         return (sdPlayer == 0 ? vlWhite : vlBlack) > NULLSAFE_MARGIN;
     }
 
-    bool IsDraw(void) const {                // 和棋判断
+    bool IsDraw() const {                // 和棋判断
         return (!PreEval.bPromotion && (dwBitPiece & BOTH_BITPIECE(ATTACK_BITPIECE)) == 0) ||
                -LastMove().Drw >= DRAW_MOVES || nMoveNum == MAX_MOVE_NUM;
     }
 
     int64_t RepStatus(int64_t nRecur = 1) const;     // 重复局面检测
-    int64_t DrawValue(void) const {              // 和棋的分值
+    int64_t DrawValue() const {              // 和棋的分值
         return (nDistance & 1) == 0 ? -DRAW_VALUE : DRAW_VALUE;
     }
 
@@ -425,7 +443,7 @@ struct PositionStruct {
         return vlRep == REP_LOSS ? nDistance - BAN_VALUE : vlRep == REP_WIN ? BAN_VALUE - nDistance : DrawValue();
     }
 
-    int64_t Material(void) const {               // 子力平衡，包括先行权因素
+    int64_t Material() const {               // 子力平衡，包括先行权因素
 //        if (SIDE_VALUE(sdPlayer, vlWhite - vlBlack) + PreEval.vlAdvanced == -136) {
 //            printf("best val\n");
 //            this->PrintBoard();
@@ -446,21 +464,73 @@ struct PositionStruct {
     }
 
 // 着法生成过程，由于这些过程代码量特别大，所以把他们都集中在"preeval.cpp"和"evaluate.cpp"中
-    void PreEvaluate(void);
+    void PreEvaluate();
 
-    int64_t AdvisorShape(void) const;
+    int64_t AdvisorShape() const;
 
-    int64_t StringHold(void) const;
+    int64_t StringHold() const;
 
-    int64_t RookMobility(void) const;
+    int64_t RookMobility() const;
 
-    int64_t KnightTrap(void) const;
+    int64_t KnightTrap() const;
 
     int64_t Evaluate(int64_t vlAlpha, int64_t vlBeta) const;
 
     void PrintBoard() const;
 
-    vector<pair<int64_t, int64_t>> GenUnknownPos() const;
+    UnknownPos GenUnknownPos(int64_t mv) const;
 }; // pos
+
+
+// 是否有揭棋
+inline int64_t TRUE_PC_MOVED(PositionStruct &pos, uint64_t dwMoveStr) {
+    char *lpArgPtr;
+    char lp;
+    lpArgPtr = (char *) &dwMoveStr;
+    lp = lpArgPtr[4];
+    if (lp == '0') {
+        return 0;
+    }
+    if (lp == '1') {
+        return -1;
+    }
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 50; j++) {
+            if (PIECE_BYTE(PIECE_TYPE(j)) + (j > 32 ? 'a' - 'A' : 0) == lp) {
+                pos.unknownPieces[i][j] = false;
+                pos.unknownCount[i]--;
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
+inline int64_t UNKNOWN_CPT(PositionStruct &pos, uint64_t dwMoveStr) {
+    char *lpArgPtr;
+    char lp;
+    lpArgPtr = (char *) &dwMoveStr;
+    lp = lpArgPtr[5];
+    if (lp == '0') {
+        return 0;
+    }
+    if (lp == '1') {
+        return -1;
+    }
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 50; j++) {
+            if (PIECE_BYTE(PIECE_TYPE(j)) + (j > 32 ? 'a' - 'A' : 0) == lp) {
+                pos.unknownPieces[i][j] = false;
+                pos.unknownCount[i]--;
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
 
 #endif

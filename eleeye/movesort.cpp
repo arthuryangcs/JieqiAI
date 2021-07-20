@@ -27,12 +27,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 int64_t nHistory[65536]; // 历史表
 
 // 根据历史表对着法列表赋值
-void MoveSortStruct::SetHistory(void) {
+void MoveSortStruct::SetHistory() {
     int64_t i, j, vl, nShift, nNewShift;
     nShift = 0;
     for (i = nMoveIndex; i < nMoveNum; i++) {
         // 如果着法的分值超过65536，就必需对所有着法的分值作缩减，使它们都不超过65536
         vl = nHistory[mvs[i].wmv] >> nShift;
+
+//        printf("i: %lld, mv: %d, vl: %lld\n", i, mvs[i].wmv, vl);
+//
         if (vl > 65535) {
             nNewShift = Bsr(vl) - 15;
             for (j = nMoveIndex; j < i; j++) {

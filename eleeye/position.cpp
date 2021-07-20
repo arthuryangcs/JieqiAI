@@ -199,9 +199,10 @@ void PositionStruct::AddPiece(int64_t sq, int64_t pc, bool bDel) {
 
 // 移动棋子
 // truePcMoved, unknownCpt 表示移动的棋子是揭棋翻开的棋子和被吃的是揭棋翻开的棋子。0 表示不是揭棋，-1 表示随机选择
-tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_t truePcMoved, int64_t unknownCpt) {
+
+PositionStruct::MoveResultStruct PositionStruct::MovePiece(int64_t mv, int64_t truePcMoved, int64_t unknownCpt) {
     bool isUnknown = false, isUnknownPcCap = false;
-    int64_t sqSrc, sqDst, pt, pmt;
+    int64_t sqSrc, sqDst, pt;
     int8_t pcMoved, pcCaptured;
     uint8_t *lpucvl;
     // 移动棋子包括以下几个步骤：
@@ -223,43 +224,75 @@ tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_
             return {false, 0, false, 0};
         }
         if (truePcMoved == -1) {
-            auto it(this->unknownPieces[this->sdPlayer].begin());
-            advance(it, this->rc4Random.NextLong() % this->unknownPieces[this->sdPlayer].size());
-            truePcMoved = *it;
+            int64_t index = (this->rc4Random.NextLong() % this->unknownCount[this->sdPlayer]) + 1;
+            for (int i = 0; i < 64; i++) {
+                if (this->unknownPieces[this->sdPlayer][i]) {
+                    index--;
+                    if (index == 0) {
+                        truePcMoved = i;
+                        break;
+                    }
+                }
+            }
         }
     } else if (truePcMoved == -1 || truePcMoved == 0) {
         truePcMoved = pcMoved;
     } else if (truePcMoved != 0) {
-        return {false, 0, false, 0};
+        return MoveResultStruct{false, 0, false, 0};
     }
     __ASSERT_PIECE(truePcMoved);
 
     if (pcCaptured == NO_PIECE) {
         if (unknownCpt != 0 && unknownCpt != -1) {
-            return {false, 0, false, 0};
+            return MoveResultStruct{false, 0, false, 0};
         }
     } else {
         if (isUnknownPcCap) {
             if (unknownCpt == 0) {
-                return {false, 0, false, 0};
+                return MoveResultStruct{false, 0, false, 0};
             }
             if (unknownCpt == -1) {
-                auto it(this->unknownOppositePieces[this->sdPlayer].begin());
-                advance(it, this->rc4Random.NextLong() % this->unknownOppositePieces[this->sdPlayer].size());
-                unknownCpt = *it;
+                int64_t index = (this->rc4Random.NextLong() % this->unknownOppositeCount[this->sdPlayer]) + 1;
+                for (int i = 0; i < 64; i++) {
+                    if (this->unknownOppositePieces[this->sdPlayer][i]) {
+                        index--;
+                        if (index == 0) {
+                            unknownCpt = i;
+                            break;
+                        }
+                    }
+                }
             }
         } else if (unknownCpt != 0 && unknownCpt != -1){
-            return {false, 0, false, 0};
+            return MoveResultStruct{false, 0, false, 0};
         }
     }
 
     if (isUnknown) {
-        this->unknownPieces[this->sdPlayer].erase(truePcMoved);
-        this->unknownOppositePieces[1-this->sdPlayer].erase(truePcMoved);
+        if (!this->unknownPieces[this->sdPlayer][truePcMoved]) {
+            int a;
+        }
+        this->unknownPieces[this->sdPlayer][truePcMoved] = false;
+        this->unknownCount[this->sdPlayer]--;
+        this->unknownOppositePieces[1 - this->sdPlayer][truePcMoved] = false;
+        this->unknownOppositeCount[1 - this->sdPlayer]--;
         if (pcMoved < 32) {
-            this->vlWhite += PreEval.ucvlWhitePieces[PIECE_TYPE(truePcMoved)][sqDst] - PreEval.ucvlWhitePieces[PIECE_TYPE(pcMoved)][sqSrc];
+//            this->vlWhite += 10;
+//            this->vlWhite += 10 - PreEval.ucvlWhitePieces[PIECE_TYPE(pcMoved)][sqSrc] / 5;
+            this->vlWhite += PreEval.ucvlWhitePieces[PIECE_TYPE(truePcMoved)][sqDst] -
+                             PreEval.ucvlWhitePieces[PIECE_TYPE(pcMoved)][sqSrc];
         } else {
-            this->vlBlack += PreEval.ucvlBlackPieces[PIECE_TYPE(truePcMoved)][sqDst] - PreEval.ucvlBlackPieces[PIECE_TYPE(pcMoved)][sqSrc];
+//            this->vlBlack += 10;
+//            this->vlBlack += 10 - PreEval.ucvlBlackPieces[PIECE_TYPE(pcMoved)][sqSrc] / 5;
+            this->vlBlack += PreEval.ucvlBlackPieces[PIECE_TYPE(truePcMoved)][sqDst] -
+                             PreEval.ucvlBlackPieces[PIECE_TYPE(pcMoved)][sqSrc];
+        }
+    } else {
+        pt = PIECE_TYPE(truePcMoved);
+        if (pcMoved < 32) {
+            this->vlWhite += PreEval.ucvlWhitePieces[pt][sqDst] - PreEval.ucvlWhitePieces[pt][sqSrc];
+        } else {
+            this->vlBlack += PreEval.ucvlBlackPieces[pt][sqDst] - PreEval.ucvlBlackPieces[pt][sqSrc];
         }
     }
 
@@ -279,21 +312,25 @@ tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_
         pt = PIECE_TYPE(pcCaptured);
 
         if (isUnknownPcCap) {
-            this->unknownEatCount[1 - this->sdPlayer]++;
-            this->unknownOppositePieces[this->sdPlayer].erase(unknownCpt);
-            this->unknownEatPieces[this->sdPlayer].insert(unknownCpt);
+            this->unknownEatenCount[1 - this->sdPlayer]++;
+            this->unknownOppositePieces[this->sdPlayer][unknownCpt] = false;
+            this->unknownOppositeCount[this->sdPlayer]--;
+            this->unknownEatPieces[this->sdPlayer][unknownCpt] = true;
+            this->unknownEatCount[this->sdPlayer]++;
         }
 
         if (pcCaptured < 32) {
-            if (pt == 7) {
-                this->vlWhite -= 50;
-            }
-            this->vlWhite -= PreEval.ucvlWhitePieces[pt][sqDst];
+//            if (pt == 7) {
+//                this->vlWhite -= 10;
+//            }
+//            this->vlWhite -= PreEval.ucvlWhitePieces[pt][sqDst];
+            this->vlWhite -= PreEval.ucvlWhitePieces[PIECE_TYPE(unknownCpt)][sqDst];
         } else {
-            if (pt == 7) {
-                this->vlBlack -= 50;
-            }
-            this->vlBlack -= PreEval.ucvlBlackPieces[pt][sqDst];
+//            if (pt == 7) {
+//                this->vlBlack -= 10;
+//            }
+//            this->vlBlack -= PreEval.ucvlBlackPieces[pt][sqDst];
+            this->vlBlack -= PreEval.ucvlBlackPieces[PIECE_TYPE(unknownCpt)][sqDst];
             pt += 8;
         }
         __ASSERT_BOUND(0, pt, 15);
@@ -311,12 +348,12 @@ tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_
     __ASSERT_BITRANK(this->wBitRanks[RANK_Y(sqSrc)]);
     __ASSERT_BITFILE(this->wBitRanks[FILE_X(sqSrc)]);
     pt = PIECE_TYPE(pcMoved);
-    if (pcMoved < 32 && !isUnknown) {
+    if (pcMoved < 32) {
         lpucvl = PreEval.ucvlWhitePieces[pt];
-        this->vlWhite += lpucvl[sqDst] - lpucvl[sqSrc];
+//        this->vlWhite += lpucvl[sqDst] - lpucvl[sqSrc];
     } else {
         lpucvl = PreEval.ucvlBlackPieces[pt];
-        this->vlBlack += lpucvl[sqDst] - lpucvl[sqSrc];
+//        this->vlBlack += lpucvl[sqDst] - lpucvl[sqSrc];
         pt += 8;
     }
     __ASSERT_BOUND(0, pt, 15);
@@ -325,7 +362,7 @@ tuple<bool, int64_t, bool, int64_t> PositionStruct::MovePiece(int64_t mv, int64_
 //    printf("move %lld %lld %lld %d %d %lld\n", this->sdPlayer, SRC(mv), DST(mv), pcCaptured, isUnknown, unknownCpt);
 //    PrintBoard();
 
-    return {true, pcCaptured, isUnknown, unknownCpt};
+    return MoveResultStruct{true, pcCaptured, isUnknown, unknownCpt};
 }
 
 // 撤消移动棋子
@@ -345,8 +382,13 @@ void PositionStruct::UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknow
     }
 
     if (isUnknown) {
-        this->unknownPieces[1 - trueSdPlayer].insert(pcMoved);
-        this->unknownOppositePieces[trueSdPlayer].insert(pcMoved);
+        if (this->unknownCount[1 - trueSdPlayer] >= 15) {
+            int a;
+        }
+        this->unknownPieces[1 - trueSdPlayer][pcMoved] = true;
+        this->unknownCount[1 - trueSdPlayer]++;
+        this->unknownOppositePieces[trueSdPlayer][pcMoved] = true;
+        this->unknownOppositeCount[trueSdPlayer]++;
         this->ucsqPieces[pcMoved] = 0;
         pcMoved = UNKNOWN_PIECE_TYPE(sqSrc) + 15 + SIDE_TAG(1 - trueSdPlayer);
         __ASSERT_PIECE(pcMoved);
@@ -360,9 +402,11 @@ void PositionStruct::UndoMovePiece(int64_t mv, int64_t pcCaptured, bool isUnknow
     __ASSERT_BITFILE(this->wBitRanks[FILE_X(sqSrc)]);
     if (pcCaptured > NO_PIECE) {
         if (IS_UNKNOWN(pcCaptured)) {
-            this->unknownEatCount[trueSdPlayer]--;
-            this->unknownOppositePieces[1 - trueSdPlayer].insert(unknownCpt);
-            this->unknownEatPieces[1 - trueSdPlayer].erase(unknownCpt);
+            this->unknownEatenCount[trueSdPlayer]--;
+            this->unknownOppositePieces[1 - trueSdPlayer][unknownCpt] = true;
+            this->unknownOppositeCount[1 - trueSdPlayer]++;
+            this->unknownEatPieces[1 - trueSdPlayer][unknownCpt] = false;
+            this->unknownEatCount[1 - trueSdPlayer]--;
         }
 
         __ASSERT_PIECE(pcCaptured);
@@ -448,7 +492,7 @@ void PositionStruct::UndoPromote(int64_t sq, int64_t pcCaptured) {
 // 执行一个着法
 bool PositionStruct::MakeMove(int64_t mv, int64_t truePcMoved, int64_t unknownCpt) {
     bool isUnknown, legal;
-    int64_t sq, pcCaptured;
+    int64_t pcCaptured;
     uint32_t dwOldZobristKey;
     RollbackStruct *lprbs;
 
@@ -469,10 +513,10 @@ bool PositionStruct::MakeMove(int64_t mv, int64_t truePcMoved, int64_t unknownCp
 //        pcCaptured = Promote(sq);
 //    } else {
     auto tup = MovePiece(mv, truePcMoved, unknownCpt);
-    legal = get<0>(tup);
-    pcCaptured = get<1>(tup);
-    isUnknown = get<2>(tup);
-    unknownCpt = get<3>(tup);
+    legal = tup.canMove;
+    pcCaptured = tup.pcCaptured;
+    isUnknown = tup.isUnknown;
+    unknownCpt = tup.unknownCpt;
     if (!legal) {
         return false;
     }
@@ -576,7 +620,7 @@ void PositionStruct::PrintBoard() const {
         for (int j = 3; j < 12; j++) {
             char p = PIECE_BYTE(PIECE_TYPE(this->ucpcSquares[i * 16 + j]));
             if (this->ucpcSquares[i * 16 + j] == -1) {
-                p = '+';
+                p = '.';
             } else if (this->ucpcSquares[i * 16 + j] >= 32) {
                 p += 'a' - 'A';
             }
@@ -585,29 +629,33 @@ void PositionStruct::PrintBoard() const {
         printf("\n");
     }
 
-    for (int side = 0; side < 2; side++) {
-        printf("%lld ", this->unknownEatCount[side]);
-        __ASSERT(this->unknownEatCount[side] >=0);
+//    for (int side = 0; side < 2; side++) {
+//        printf("%lld ", this->unknownEatenCount[side]);
+//        __ASSERT(this->unknownEatenCount[side] >= 0);
+//
+//        for (auto i : this->unknownPieces[side]) {
+//            printf("%c", PIECE_BYTE(PIECE_TYPE(i)) + (i > 32 ? 'a' - 'A' : 0));
+//            __ASSERT(!IS_SAME_SIDE(i, OPP_SIDE_TAG(side)));
+//        }
+//
+//        printf(" ");
+//        for (auto i : this->unknownEatPieces[side]) {
+//            printf("%c", PIECE_BYTE(PIECE_TYPE(i)) + (i > 32 ? 'a' - 'A' : 0));
+//            __ASSERT(IS_SAME_SIDE(i, OPP_SIDE_TAG(side)));
+//        }
+//
+//        printf(" ");
+//        for (auto i : this->unknownOppositePieces[side]) {
+//            printf("%c", PIECE_BYTE(PIECE_TYPE(i)) + (i > 32 ? 'a' - 'A' : 0));
+//            __ASSERT(IS_SAME_SIDE(i, OPP_SIDE_TAG(side)));
+//        }
+//
+//        printf("\n");
+//    }
 
-        for (auto i : this->unknownPieces[side]) {
-            printf("%c", PIECE_BYTE(PIECE_TYPE(i)) + (i > 32 ? 'a' - 'A' : 0));
-            __ASSERT(!IS_SAME_SIDE(i, OPP_SIDE_TAG(side)));
-        }
-
-        printf(" ");
-        for (auto i : this->unknownEatPieces[side]) {
-            printf("%c", PIECE_BYTE(PIECE_TYPE(i)) + (i > 32 ? 'a' - 'A' : 0));
-            __ASSERT(IS_SAME_SIDE(i, OPP_SIDE_TAG(side)));
-        }
-
-        printf(" ");
-        for (auto i : this->unknownOppositePieces[side]) {
-            printf("%c", PIECE_BYTE(PIECE_TYPE(i)) + (i > 32 ? 'a' - 'A' : 0));
-            __ASSERT(IS_SAME_SIDE(i, OPP_SIDE_TAG(side)));
-        }
-
-        printf("\n");
-    }
+    char fen[1024];
+    this->ToFen(fen);
+    printf("position fen %s- - 0 1\n", fen);
 
     printf("\n");
 }
@@ -724,8 +772,9 @@ void PositionStruct::FromFen(const char *szFen) {
     for (int side = 0; side < 2; side++) {
         while (*lpFen != ' ') {
             if (*lpFen >= 'a' && *lpFen <= 'z') {
-                this->unknownPieces[side].insert(pc[side * 2][FenPiece(*lpFen + 'A' - 'a')] + SIDE_TAG(side));
-                pc[side*2][FenPiece(*lpFen + 'A' - 'a')]++;
+                this->unknownPieces[side][pc[side * 2][FenPiece(*lpFen + 'A' - 'a')] + SIDE_TAG(side)] = true;
+                this->unknownCount[side]++;
+                pc[side * 2][FenPiece(*lpFen + 'A' - 'a')]++;
             }
             lpFen++;
         }
@@ -733,9 +782,11 @@ void PositionStruct::FromFen(const char *szFen) {
 
         while (*lpFen != ' ') {
             if (*lpFen >= 'a' && *lpFen <= 'z') {
-                this->unknownEatPieces[side].insert(pc[side*2 + 1][FenPiece(*lpFen + 'A' - 'a')] + SIDE_TAG(1-side));
+                this->unknownEatPieces[side][pc[side * 2 + 1][FenPiece(*lpFen + 'A' - 'a')] +
+                                             SIDE_TAG(1 - side)] = true;
+                this->unknownEatCount[side]++;
                 pc[side * 2 + 1][FenPiece(*lpFen + 'A' - 'a')]++;
-                this->unknownEatCount[1-side]++;
+                this->unknownEatenCount[1 - side]++;
             }
             lpFen++;
         }
@@ -745,8 +796,9 @@ void PositionStruct::FromFen(const char *szFen) {
 
     for (int side = 0; side < 2; side++) {
         for (int64_t i = 0; i < 64; i++) {
-            if(this->unknownPieces[side].find(i) != this->unknownPieces[side].end() && this->unknownEatPieces[1-side].find(i) == this->unknownEatPieces[1-side].end()) {
-                this->unknownOppositePieces[1-side].insert(i);
+            if (this->unknownPieces[side][i] && !this->unknownEatPieces[1 - side][i]) {
+                this->unknownOppositePieces[1 - side][i] = true;
+                this->unknownOppositeCount[1 - side]++;
             }
         }
     }
@@ -787,11 +839,31 @@ void PositionStruct::ToFen(char *szFen) const {
     *(lpFen - 1) = ' '; // 把最后一个'/'替换成' '
     *lpFen = (this->sdPlayer == 0 ? 'w' : 'b');
     lpFen++;
+
+    *lpFen = ' ';
+    lpFen++;
+
+//    for (int side = 0; side < 2; side++) {
+//        for (auto pc : this->unknownPieces[side]) {
+//            *lpFen = PIECE_BYTE(PIECE_TYPE(pc)) + 'a' - 'A';
+//            lpFen++;
+//        }
+//        *lpFen = ' ';
+//        lpFen++;
+//
+//        for (auto pc : this->unknownEatPieces[side]) {
+//            *lpFen = PIECE_BYTE(PIECE_TYPE(pc)) + 'a' - 'A';
+//            lpFen++;
+//        }
+//        *lpFen = ' ';
+//        lpFen++;
+//    }
+
     *lpFen = '\0';
 }
 
 // 局面镜像
-void PositionStruct::Mirror(void) {
+void PositionStruct::Mirror() {
     int64_t i, sq, nMoveNumSave;
     uint16_t wmvList[MAX_MOVE_NUM];
     uint8_t ucsqList[64];
@@ -1166,18 +1238,57 @@ int64_t PositionStruct::RepStatus(int64_t nRecur) const {
 // 以上是一些着法检测过程
 
 // 生成所有可能的揭棋翻棋情况
-vector<pair<int64_t, int64_t>> PositionStruct::GenUnknownPos() const {
-    vector<pair<int64_t, int64_t>> v;
-    for (const auto a : this->unknownPieces[this->sdPlayer]) {
-        for (const auto b : this->unknownOppositePieces[this->sdPlayer]) {
-            v.emplace_back(a, b);
-        }
-        v.emplace_back(a, 0);
-    }
-    for (const auto b : this->unknownOppositePieces[this->sdPlayer]) {
-        v.emplace_back(0, b);
-    }
-    v.emplace_back(0, 0);
-    return v;
-}
 
+UnknownPos PositionStruct::GenUnknownPos(int64_t mv) const {
+    UnknownPos unknownPos;
+    unknownPos.count = 0;
+    int8_t pcMoved = this->ucpcSquares[SRC(mv)];
+    int8_t pcCaptured = this->ucpcSquares[DST(mv)];
+
+    if (IS_UNKNOWN(pcMoved) && IS_UNKNOWN(pcCaptured)) {
+        for (int a = 1; a < 50; a++) {
+            if (!this->unknownPieces[this->sdPlayer][a]) {
+                continue;
+            }
+            for (int b = 1; b < 50; b++) {
+                if (!this->unknownOppositePieces[this->sdPlayer][b]) {
+                    continue;
+                }
+
+                unknownPos.first[unknownPos.count] = a;
+                unknownPos.second[unknownPos.count] = b;
+                unknownPos.count++;
+            }
+        }
+    }
+
+    if (IS_UNKNOWN(pcMoved)) {
+        for (int a = 1; a < 50; a++) {
+            if (!this->unknownPieces[this->sdPlayer][a]) {
+                continue;
+            }
+
+            unknownPos.first[unknownPos.count] = a;
+            unknownPos.second[unknownPos.count] = 0;
+            unknownPos.count++;
+        }
+    }
+
+    if (IS_UNKNOWN(pcCaptured)) {
+        for (int b = 1; b < 50; b++) {
+            if (!this->unknownOppositePieces[this->sdPlayer][b]) {
+                continue;
+            }
+
+            unknownPos.first[unknownPos.count] = 0;
+            unknownPos.second[unknownPos.count] = b;
+            unknownPos.count++;
+        }
+    }
+
+    unknownPos.first[unknownPos.count] = 0;
+    unknownPos.second[unknownPos.count] = 0;
+    unknownPos.count++;
+
+    return unknownPos;
+}
