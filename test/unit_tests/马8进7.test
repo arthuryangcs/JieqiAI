@@ -1,5 +1,5 @@
 ucci
 setoption batch true
-position fen xxxxkxxxx/9/1x5x1/x1x1x1x1x/9/6R2/X1X1X3X/1X5X1/9/XXXXKXXXX b rnnbbaaccppppp  rrnnbbaaccppppp  - - 0 1
-go depth 4
+position fen x1xxkxxxx/9/1x5x1/x1x1x1x1x/9/6R2/X1X1X3X/1X5X1/9/X1XXKXX1X b rnnbbaaccppppp  rrnnbbaaccppppp  - - 0 1
+go depth 3
 quit
