@@ -9,7 +9,7 @@ This part (ucci.h/ucci.cpp only) of codes is NOT published under LGPL, and
 can be used without restriction.
 */
 
-#include "../base/base.h"
+#include "base.h"
 
 #ifndef UCCI_H
 #define UCCI_H

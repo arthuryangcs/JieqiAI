@@ -10,9 +10,9 @@ can be used without restriction.
 */
 
 #include <cstdio>
-#include "../base/base2.h"
-#include "../base/parse.h"
-#include "../base/pipe.h"
+#include "base2.h"
+#include "parse.h"
+#include "pipe.h"
 #include "ucci.h"
 
 /* UCCI指令分析模块由三各UCCI指令解释器组成。

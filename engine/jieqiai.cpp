@@ -1,5 +1,5 @@
 /*
-eleeye.cpp - Source Code for ElephantEye, Part IX
+jieqiai.cpp - Source Code for ElephantEye, Part IX
 
 ElephantEye - a Chinese Chess Program (UCCI Engine)
 Designed by Morning Yellow, Version: 3.3, Last Modified: Mar. 2012
@@ -21,8 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <cstdio>
-#include "../base/base2.h"
-#include "../base/parse.h"
+#include "base2.h"
 #include "ucci.h"
 #include "pregen.h"
 #include "position.h"

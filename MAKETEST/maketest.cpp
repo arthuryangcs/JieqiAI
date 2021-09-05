@@ -20,14 +20,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <stdio.h>
 #include <string.h>
+
 #ifdef _WIN32
-  #include <windows.h>
+#include <windows.h>
 #else
-  #include <dirent.h>
+
+#include <dirent.h>
+
 #endif
-#include "../base/base2.h"
-#include "../base/parse.h"
-#include "../eleeye/position.h"
+
+#include "../engine/base2.h"
+#include "../engine/parse.h"
+#include "../engine/position.h"
 #include "../cchess/cchess.h"
 #include "../cchess/pgnfile.h"
 
@@ -35,9 +39,9 @@ const int64MAX_CHAR = 1024;
 const int64MAX_PLAYER = 16;
 
 static struct {
-  bool bWinMove, bDrawMove, bLossMove, bUnknownMove;
-  int64nPlayerNum, nSkipHead, nSkipTail;
-  char szPlayerList[MAX_PLAYER][MAX_CHAR];
+    bool bWinMove, bDrawMove, bLossMove, bUnknownMove;
+    int64nPlayerNum, nSkipHead, nSkipTail;
+    char szPlayerList[MAX_PLAYER][MAX_CHAR];
   FILE *fpOutput;
 } MakeTest;
 

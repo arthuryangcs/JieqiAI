@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <cstdio>
 #include <vector>
-#include "../base/base.h"
+#include "base.h"
 #include "pregen.h"
 #include "position.h"
 

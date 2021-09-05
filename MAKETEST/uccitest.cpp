@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <stdio.h>
 #include <string.h>
-#include "../base/base2.h"
-#include "../base/parse.h"
-#include "../base/pipe.h"
-#include "../eleeye/position.h"
+#include "../engine/base2.h"
+#include "../engine/parse.h"
+#include "../engine/pipe.h"
+#include "../engine//position.h"
 
 const int64MAX_CHAR = 1024; // 配置文件的最大长度
 const int64MAX_INIT = 16;   // Init配置项最大行数

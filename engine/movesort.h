@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define MOVESORT_H
 
 #include <string.h>
-#include "../base/base.h"
+#include "base.h"
 #include "position.h"
 
 const int64_t LIMIT_DEPTH = 64;       // 搜索的极限深度

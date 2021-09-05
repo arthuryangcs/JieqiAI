@@ -21,17 +21,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
-#include "../base/base.h"
-#include "../eleeye/position.h"
-#include "../eleeye/book.h"
+#include "../engine/base.h"
+#include "../engine/position.h"
+#include "../engine/book.h"
 #include "../cchess/cchess.h"
 #include "../cchess/pgnfile.h"
 
-extern "C" __declspec(dllexport) BOOL WINAPI MakeBook(LPCSTR szPath, LPCSTR szFile,
-    LONG nWin, LONG nDraw, LONG nLoss, LONG nRatio);
-extern "C" __declspec(dllexport) LONG WINAPI GetBookMoves(const PositionStruct *lppos,
-    LPCSTR szFile, BookStruct *lpbks);
-extern "C" __declspec(dllexport) BOOL WINAPI PutBookMove(LPCSTR szFile, const BookStruct *lpcbk);
+extern "C" __declspec(dllexport) BOOL WINAPI
+MakeBook(LPCSTR
+szPath,
+LPCSTR szFile,
+        LONG
+nWin,
+LONG nDraw, LONG
+nLoss,
+LONG nRatio
+);
+extern "C" __declspec(dllexport) LONG WINAPI
+
+GetBookMoves(const PositionStruct *lppos,
+             LPCSTR szFile, BookStruct *lpbks);
+
+extern "C" __declspec(dllexport) BOOL WINAPI
+PutBookMove(LPCSTR
+szFile,
+const BookStruct *lpcbk
+);
 
 struct TempStruct {
   uint32_t dwZobristLock0, dwZobristLock1;
