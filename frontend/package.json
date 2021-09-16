@@ -1,0 +1,15 @@
+{
+  "name": "jieqiai-frontend",
+  "version": "1.0.0",
+  "description": "Jieqi AI frontend.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "author": "arthuryangcs",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "electron": "^14.0.1"
+  }
+}
