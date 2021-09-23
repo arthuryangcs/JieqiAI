@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="67.733337mm"
+   height="67.733337mm"
+   viewBox="0 0 67.733337 67.733337"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="chess.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="-68.330408"
+     inkscape:cy="60.939924"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-42.597909,-67.077)">
+    <path
+       style="opacity:1;vector-effect:none;fill:#363636;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.3409045;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path815"
+       sodipodi:type="arc"
+       sodipodi:cx="76.464577"
+       sodipodi:cy="100.94366"
+       sodipodi:rx="33.866669"
+       sodipodi:ry="33.866669"
+       sodipodi:start="0"
+       sodipodi:end="6.279014"
+       sodipodi:open="true"
+       d="M 110.33125,100.94366 A 33.866669,33.866669 0 0 1 76.499894,134.81031 33.866669,33.866669 0 0 1 42.597982,101.01429 33.866669,33.866669 0 0 1 76.358626,67.077154 33.866669,33.866669 0 0 1 110.33095,100.80239" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:43.61413193px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.09035325"
+       x="54.572327"
+       y="116.70267"
+       id="text819"><tspan
+         sodipodi:role="line"
+         id="tspan817"
+         x="54.572327"
+         y="116.70267"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SimSun;-inkscape-font-specification:SimSun;fill:#ffffff;fill-opacity:1;stroke-width:1.09035325">象</tspan></text>
+    <path
+       style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:0.77732211;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path821"
+       sodipodi:type="arc"
+       sodipodi:cx="76.464577"
+       sodipodi:cy="100.94366"
+       sodipodi:rx="29.204636"
+       sodipodi:ry="29.204636"
+       sodipodi:start="0"
+       sodipodi:end="6.279014"
+       sodipodi:open="true"
+       d="M 105.66921,100.94366 A 29.204636,29.204636 0 0 1 76.495032,130.14828 29.204636,29.204636 0 0 1 47.260005,101.00457 29.204636,29.204636 0 0 1 76.373211,71.739164 29.204636,29.204636 0 0 1 105.66896,100.82184" />
+  </g>
+</svg>
