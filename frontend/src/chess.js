@@ -1,17 +1,58 @@
-const ccengine = require("ccengine");
+// const ccengine = require("ccengine");
 
-var engine = ccengine.create();
-var setting = null;
-var listener = null;
-var aiCallbak = null;
-var actionCallback = null;
+const engine = { };
+let setting = null;
+let listener = null;
+let aiCallback = null;
+let actionCallback = null;
+
+engine.startup = function (color) {
+}
+
+engine.board = [
+  20, 19, 18, 17, 16, 17, 18, 19, 20,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0, 21,  0,  0,  0,  0,  0, 21,  0,
+  22,  0, 22,  0, 22,  0, 22,  0, 22,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  14,  0, 14,  0, 14,  0, 14,  0, 14,
+  0, 13,  0,  0,  0,  0,  0, 13,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  12, 11, 10,  9,  8,  9, 10, 11, 12,
+]
+
+engine.findSolution = function (level, move) {
+  move();
+}
+
+engine.move = function (movement) {
+  engine.board[0]--;
+  return "go";
+}
+
+engine.getPlayer = function () {
+  return 0;
+}
+
+engine.getLastMove = function () {
+  return 0;
+}
+
+engine.getState = function () {
+  return {
+    over: false,
+    winner: null,
+    board: engine.board,
+  }
+}
 
 exports.onStateChanged = function(callback) {
   listener = callback;
 };
 
 exports.onAIStateChanged = function(callback) {
-  aiCallbak = callback;
+  aiCallback = callback;
 };
 
 exports.onAction = function(callback) {
@@ -23,7 +64,7 @@ exports.getState = function() {
 };
 
 exports.getPlayer = function() {
-  return engine.getPlayer() == 0 ? "red" : "black";
+  return engine.getPlayer() === 0 ? "red" : "black";
 };
 
 exports.getLastMove = function() {
@@ -39,21 +80,21 @@ exports.goBack = function() {
 };
 
 function aiGo() {
-  if (engine.getPlayer() == 0 && setting.redSide == "ai") { // red side
+  if (engine.getPlayer() === 0 && setting.redSide === "ai") { // red side
     setTimeout(function(){
-      typeof aiCallbak == "function" && aiCallbak("start");
+      typeof aiCallback == "function" && aiCallback("start");
       engine.findSolution(setting.level, function(movement) {
-        typeof aiCallbak == "function" && aiCallbak("stop");
+        typeof aiCallback == "function" && aiCallback("stop");
         if (movement) {
           exports.go(movement);
         }
       });
     }, 700);
-  } else if (engine.getPlayer() == 1 && setting.blackSide == "ai") {
+  } else if (engine.getPlayer() === 1 && setting.blackSide === "ai") {
     setTimeout(function(){
-      typeof aiCallbak == "function" && aiCallbak("start");
+      typeof aiCallback == "function" && aiCallback("start");
       engine.findSolution(setting.level, function(movement) {
-        typeof aiCallbak == "function" && aiCallbak("stop");
+        typeof aiCallback == "function" && aiCallback("stop");
         if (movement) {
           exports.go(movement);
         }
@@ -65,8 +106,8 @@ function aiGo() {
 exports.go = function(movement) {
   if (!setting)
     return;
-  var result;
-  if (arguments.length == 1) {
+  let result;
+  if (arguments.length === 1) {
     result = engine.move(movement);
   } else {
     result = engine.move(...arguments);
@@ -94,14 +135,14 @@ exports.newGame = function(option) {
     option.blackSide = "ai";
   }
   let color = 0;
-  if (option && option.color == 'black') {
+  if (option && option.color === 'black') {
     color = 1;
   }
   engine.startup(color);
   setting = option;
   if (typeof listener == "function")
     listener();
-  if (option.redSide == "ai") {
+  if (option.redSide === "ai") {
     setTimeout(function() {
       aiGo();
     }, 1000);

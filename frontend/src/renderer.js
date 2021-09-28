@@ -1,4 +1,4 @@
-// const engine = require("./chess.js");
+const engine = require("./chess.js");
 const ipcRenderer = require("electron").ipcRenderer;
 const fs = require('fs');
 const os = require('os');
@@ -18,7 +18,7 @@ function onResize() {
 window.onresize = onResize;
 window.onload = function() {
   loadConfig();
-  // engine.newGame(setting);
+  engine.newGame(setting);
   onResize();
 }
 
@@ -53,61 +53,61 @@ function newGame(color) {
   setting.color = color;
   setting.redSide = (color === "red" ? "human" : "ai");
   setting.blackSide = (color === "black" ? "human" : "ai");
-  // engine.newGame(setting);
+  engine.newGame(setting);
 }
 
-// engine.onStateChanged(function() {
-//   activePos = null;
-//   gameState = engine.getState();
-//   player = engine.getPlayer();
-//   lastMove = engine.getLastMove();
-//   $("statusBar").innerHTML = (player === "red" ? "该红方走棋" : "该黑方走棋");
-//   draw();
-//   if (gameState.over) {
-//     if (gameState.winner) {
-//       if (gameState.winner === "red") {
-//         $("statusBar").innerHTML = "红方胜！";
-//         setTimeout(function() {msgbox("红方胜！");}, 100);
-//       } else {
-//         $("statusBar").innerHTML = "黑方胜！";
-//         setTimeout(function() {msgbox("黑方胜！");}, 100);
-//       }
-//     } else {
-//       $("statusBar").innerHTML = "和棋！";
-//       setTimeout(function() {msgbox("和棋！");}, 100);
-//     }
-//   }
-// });
-//
-// engine.onAIStateChanged(function(state) {
-//   aiState = state;
-//   if (state === "start") {
-//     $("statusBar").innerHTML = "计算机正在思考...";
-//   }
-// });
-//
-// engine.onAction(function(action) {
-//   const audio = $("sound");
-//   audio.type = "audio/wav";
-//   if (action === "go") {
-//     if (gameState.over && gameState.winner === setting.color) {
-//       audio.src = "sound/win.wav";
-//     } else if (gameState.over && gameState.winner && gameState.winner !== setting.color) {
-//       audio.src = "sound/loss.wav";
-//     } else if (gameState.over) {
-//       audio.src = "sound/draw.wav";
-//     } else if (gameState.checked) {
-//       audio.src = "sound/check.wav";
-//     } else if (gameState.captured) {
-//       audio.src = "sound/captured.wav";
-//     } else
-//       audio.src = "sound/move.wav";
-//     audio.play();
-//   } else if (action === "wrong") {
-//     audio.src = "sound/wrong.wav";
-//     audio.play();
-//   }
-// });
+engine.onStateChanged(function() {
+  activePos = null;
+  gameState = engine.getState();
+  player = engine.getPlayer();
+  lastMove = engine.getLastMove();
+  $("statusBar").innerHTML = (player === "red" ? "该红方走棋" : "该黑方走棋");
+  draw();
+  if (gameState.over) {
+    if (gameState.winner) {
+      if (gameState.winner === "red") {
+        $("statusBar").innerHTML = "红方胜！";
+        setTimeout(function() {msgbox("红方胜！");}, 100);
+      } else {
+        $("statusBar").innerHTML = "黑方胜！";
+        setTimeout(function() {msgbox("黑方胜！");}, 100);
+      }
+    } else {
+      $("statusBar").innerHTML = "和棋！";
+      setTimeout(function() {msgbox("和棋！");}, 100);
+    }
+  }
+});
+
+engine.onAIStateChanged(function(state) {
+  aiState = state;
+  if (state === "start") {
+    $("statusBar").innerHTML = "计算机正在思考...";
+  }
+});
+
+engine.onAction(function(action) {
+  const audio = $("sound");
+  audio.type = "audio/wav";
+  if (action === "go") {
+    if (gameState.over && gameState.winner === setting.color) {
+      audio.src = "sound/win.wav";
+    } else if (gameState.over && gameState.winner && gameState.winner !== setting.color) {
+      audio.src = "sound/loss.wav";
+    } else if (gameState.over) {
+      audio.src = "sound/draw.wav";
+    } else if (gameState.checked) {
+      audio.src = "sound/check.wav";
+    } else if (gameState.captured) {
+      audio.src = "sound/captured.wav";
+    } else
+      audio.src = "sound/move.wav";
+    audio.play();
+  } else if (action === "wrong") {
+    audio.src = "sound/wrong.wav";
+    audio.play();
+  }
+});
 
 function askbox(msg, callback) {
   ipcRenderer.once("askCallBack", function(e, result) {
@@ -181,10 +181,10 @@ function getBoardRect() {
     w = c * 8;
   }
   let left = (cw - w) / 2;
-  if (left % 2 == 1)
+  if (left % 2 === 1)
     left--;
   let top = (ch - h) / 2;
-  if (top % 2 == 1)
+  if (top % 2 === 1)
     top--;
   return {
     cell: c,
@@ -411,7 +411,7 @@ canvas.onclick = function(e) {
       activePos = {x: x, y: y};
       draw();
     } else if (activePos) {
-      // engine.go(activePos.x, activePos.y, x, y);
+      engine.go(activePos.x, activePos.y, x, y);
     }
   }
 };
