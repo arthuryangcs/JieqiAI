@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package chess;
+
+service Chess {
+  // 计算最佳应招
+  rpc Go(GoRequest) returns (stream GoResponse) {}
+}
+
+
+message GoRequest {
+  int32 depth = 1;
+}
+
+message GoResponse{
+  string message = 1;
+}

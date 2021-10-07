@@ -3,3 +3,4 @@
 .settings
 .idea/
 cmake-build-debug/
+build/
