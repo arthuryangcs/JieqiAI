@@ -1,5 +1,8 @@
 const PROTO_PATH = __dirname + '/proto/chess.proto';
 
+console.log("aaaa");
+console.log(PROTO_PATH);
+
 const grpc = require('grpc');
 const protoLoader = require('@grpc/proto-loader');
 
@@ -15,9 +18,25 @@ let packageDefinition = protoLoader.loadSync(
 
 let chess_proto = grpc.loadPackageDefinition(packageDefinition).chess;
 
-function main() {
-    let client = new chess_proto.Chess('localhost:4500', grpc.credentials.createInsecure());
+exports.go = function (depth) {
+    let call = client.Go(
+        {
+            depth: depth
+        }
+    );
 
+    call.on('data', function (response) {
+        console.log(response.message);
+    });
+
+    call.on('end', function () {
+        console.log('end');
+    });
+};
+
+
+function main() {
+    let client = new chess_proto.Chess('localhost:4501', grpc.credentials.createInsecure());
     let call = client.Go(
         {
             depth: 1
@@ -29,9 +48,9 @@ function main() {
     });
 
     call.on('end', function () {
-        console.log('All Salaries have been paid');
+        console.log('end');
     });
 
 }
 
-main();
+// main();

@@ -1,17 +1,20 @@
 const engine = require("./chess.js");
+const chess_client = require("./rpc/chess_client.js");
 const ipcRenderer = require("electron").ipcRenderer;
+
 const fs = require('fs');
 const os = require('os');
 
 window.$ = document.getElementById.bind(document);
-const canvas = $("chessBoard");
+const canvas = document.getElementById("chessBoard");
+const cal = document.getElementById("cal");
 
 function onResize() {
     canvas.style.height = "";
-    canvas.style.width = Math.floor(window.innerWidth) + "px";
+    canvas.style.width = Math.floor(window.innerWidth) - 200 + "px";
     canvas.style.height = Math.floor(canvas.clientHeight) + "px";
-    canvas.setAttribute("width", canvas.clientWidth);
-    canvas.setAttribute("height", canvas.clientHeight);
+    canvas.setAttribute("width", canvas.clientWidth.toString());
+    canvas.setAttribute("height", canvas.clientHeight.toString());
     draw();
 }
 
@@ -43,15 +46,19 @@ function loadConfig() {
 }
 
 let activePos = null;
-let gameState = null;
+let gameState = {
+    captured: false,
+};
 let player = null;
 let aiState = null;
 let lastMove = null;
 
 function newGame(color) {
     setting.color = color;
-    setting.redSide = (color === "red" ? "human" : "ai");
-    setting.blackSide = (color === "black" ? "human" : "ai");
+    // setting.redSide = (color === "red" ? "human" : "ai");
+    // setting.blackSide = (color === "black" ? "human" : "ai");
+    setting.redSide = "human";
+    setting.blackSide = "human";
     engine.newGame(setting);
 }
 
@@ -63,7 +70,7 @@ engine.onStateChanged(function () {
     gameState = engine.getState();
     player = engine.getPlayer();
     lastMove = engine.getLastMove();
-    $("statusBar").innerHTML = (player === "red" ? "该红方走棋" : "该黑方走棋");
+    document.getElementById("statusBar").innerHTML = (player === "red" ? "该红方走棋" : "该黑方走棋");
     draw();
     if (gameState.over) {
         if (gameState.winner) {
@@ -175,7 +182,7 @@ function getBoardRect() {
     let ratio = cw / ch;
     const NR = 10 / 11;
     let w, h, c;
-    if (ratio > NR) { // caculate by height
+    if (ratio > NR) { // calculate by height
         c = Math.floor(ch / 11);
         if (c % 2 === 1)
             c--;
@@ -205,10 +212,11 @@ function getBoardRect() {
 
 const chessName = [
     0, 0, 0, 0, 0, 0, 0, 0,
-    "r:帅", "r:仕", "r:相", "r:马", "r:车", "r:炮", "r:兵", 0,
-    "b:将", "b:士", "b:象", "b:马", "b:车", "b:炮", "b:卒", 0
+    "r:帥", "r:仕", "r:相", "r:傌", "r:俥", "r:炮", "r:兵", 0,
+    "b:将", "b:士", "b:象", "b:馬", "b:車", "b:砲", "b:卒", 0
 ];
 
+// 兵、炮位置线
 const soldierLines = [[1, 2], [7, 2], [1, 7], [7, 7], [0, 3], [2, 3], [4, 3], [6, 3], [8, 3], [0, 6], [2, 6], [4, 6], [6, 6], [8, 6]];
 const crossLines = [[3, 0, 5, 2], [5, 0, 3, 2], [3, 9, 5, 7], [5, 9, 3, 7]];
 
@@ -295,11 +303,13 @@ function draw() {
     ctx.translate(-0.5, -0.5);
     ctx.strokeRect(rc.left, rc.top, rc.width, rc.height);
 
+    // 棋盘横线
     for (let y = 1; y <= 8; y++) {
         ctx.moveTo(rc.left, rc.top + rc.cell * y);
         ctx.lineTo(rc.left + rc.width, rc.top + rc.cell * y);
     }
 
+    // 棋盘竖线
     for (let x = 1; x <= 7; x++) {
         ctx.moveTo(rc.left + rc.cell * x, rc.top);
         ctx.lineTo(rc.left + rc.cell * x, rc.top + rc.cell * 4);
@@ -308,7 +318,7 @@ function draw() {
         ctx.lineTo(rc.left + rc.cell * x, rc.top + rc.height);
     }
 
-
+    // 兵、炮位置线
     for (let pt of soldierLines) {
         let x = pt[0], y = pt[1];
         let c = rc.cell;
@@ -340,6 +350,7 @@ function draw() {
     ctx.stroke();
     ctx.beginPath();
 
+    // 斜线
     for (let line of crossLines) {
         let c = rc.cell;
         let l = rc.left;
@@ -428,4 +439,9 @@ canvas.onclick = function (e) {
             engine.go(activePos.x, activePos.y, x, y);
         }
     }
+};
+
+cal.onclick = function (_) {
+    console.log("cal");
+    chess_client.go(1);
 };

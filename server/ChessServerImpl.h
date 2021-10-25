@@ -6,6 +6,8 @@
 #define JIEQIAI_CHESSSERVERIMPL_H
 
 #include "gen_grpc/chess.grpc.pb.h"
+#include "search.h"
+
 
 class ChessServerImpl final : public chess::Chess::Service {
 public:

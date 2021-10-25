@@ -201,7 +201,7 @@ static bool PosStable(const PositionStruct &pos, int64_t mv) {
 }
 
 // 获取置换表局面信息(没有命中时，返回"-MATE_VALUE")
-int64_t
+__attribute__((unused)) int64_t
 ProbeHash(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, bool bNoNull, int64_t &mv) {
     HashStruct hsh;
     int64_t i, vl;

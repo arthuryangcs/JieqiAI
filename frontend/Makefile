@@ -1,2 +1,2 @@
 build:
-	npm run make
+	CXX=clang++ npm run make

@@ -1,11 +1,11 @@
 const electron = require('electron');
 // Module to control application life.
-const app = electron.app
+const app = electron.app;
 // Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow
+const BrowserWindow = electron.BrowserWindow;
 
-const path = require('path')
-const url = require('url')
+const path = require('path');
+const url = require('url');
 const fs = require('fs');
 const os = require('os');
 const {themes} = require("./theme.js");
@@ -48,11 +48,11 @@ function saveConfig() {
 
 function getWindowSizeConfig() {
     if (config.size === 1) {
-        return [400, 500];
+        return [400 + 200, 500];
     } else if (config.size === 2) {
-        return [600, 700];
+        return [600 + 200, 700];
     } else {
-        return [850, 960];
+        return [850 + 200, 960];
     }
 }
 

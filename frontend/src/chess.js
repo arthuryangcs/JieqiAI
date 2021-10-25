@@ -21,6 +21,7 @@ let board = [
 ]
 
 engine.board = []
+engine.player = 0
 
 engine.startup = function (color) {
     engine.board = [...board];
@@ -43,11 +44,13 @@ engine.move = function (movement) {
     engine.board[targetY * 9 + targetX] = engine.board[sourceY * 9 + sourceX];
     engine.board[sourceY * 9 + sourceX] = 0;
 
+    engine.player = 1 - engine.player
+
     return "go";
 }
 
 engine.getPlayer = function () {
-    return 0;
+    return engine.player;
 }
 
 engine.getLastMove = function () {

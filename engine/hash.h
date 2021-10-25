@@ -20,7 +20,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <string.h>
+#include <cstring>
 #include "base.h"
 #include "position.h"
 
@@ -51,7 +51,7 @@ extern HashStruct *hshItems;       // 置换表的指针，ElephantEye采用多�
 extern HashStruct *hshItemsQ;
 #endif
 
-inline void ClearHash(void) {         // 清空置换表
+inline void ClearHash() {         // 清空置换表
     memset(hshItems, 0, (nHashMask + 1) * sizeof(HashStruct));
 #ifdef HASH_QUIESC
     memset(hshItemsQ, 0, (nHashMask + 1) * sizeof(HashStruct));
@@ -67,7 +67,7 @@ inline void NewHash(int64_t nHashScale) { // 分配置换表，大小是 2^nHash
     ClearHash();
 }
 
-inline void DelHash(void) {           // 释放置换表
+inline void DelHash() {           // 释放置换表
     delete[] hshItems;
 #ifdef HASH_QUIESC
     delete[] hshItemsQ;
@@ -87,8 +87,9 @@ inline HashStruct &HASH_ITEM(const PositionStruct &pos, int64_t nLayer) {
 // 置换表的管理过程
 void RecordHash(const PositionStruct &pos, int64_t nFlag, int64_t vl, int64_t nDepth,
                 int64_t mv);                    // 存储置换表局面信息
-int64_t ProbeHash(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, bool bNoNull,
-                  int64_t &mv); // 获取置换表局面信息
+__attribute__((unused)) int64_t
+ProbeHash(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta, int64_t nDepth, bool bNoNull,
+          int64_t &mv); // 获取置换表局面信息
 #ifdef HASH_QUIESC
 void RecordHashQ(const PositionStruct &pos, int64_t vlBeta, int64_t vlAlpha); // 存储置换表局面信息(静态搜索)
 int64_t ProbeHashQ(const PositionStruct &pos, int64_t vlAlpha, int64_t vlBeta);   // 获取置换表局面信息(静态搜索)
